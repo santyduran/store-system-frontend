@@ -1,0 +1,640 @@
+<div class="users-page">
+
+  <div class="users-header">
+
+    <div>
+      <span class="users-eyebrow">
+        STORE SYSTEM
+      </span>
+
+      <h1>Usuarios</h1>
+
+      <p>
+        Administra los usuarios, roles y accesos al sistema.
+      </p>
+    </div>
+
+  </div>
+
+  <div class="users-card">
+
+    <div class="users-card-header">
+
+      <div>
+        <h2>Usuarios registrados</h2>
+
+        <p>
+          Consulta y administra los usuarios que tienen acceso
+          a Store System.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="btn-primary"
+        (click)="openCreateForm()"
+      >
+        + Nuevo usuario
+      </button>
+
+    </div>
+
+    @if (showCreateForm()) {
+
+      <div class="users-create-panel">
+
+        <div class="users-create-header">
+
+          <div>
+            <span class="users-create-eyebrow">
+              NUEVO USUARIO
+            </span>
+
+            <h2>
+              Crear usuario
+            </h2>
+
+            <p>
+              Registra un nuevo usuario y asigna su rol de acceso.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="btn-secondary"
+            (click)="closeCreateForm()"
+          >
+            Cancelar
+          </button>
+
+        </div>
+
+        <div class="users-create-body">
+
+          <div class="users-form-grid">
+
+            <div class="users-form-group">
+
+              <label for="name">
+                Nombre completo
+              </label>
+
+              <input
+                id="name"
+                type="text"
+                [value]="name()"
+                (input)="
+                  updateName(
+                    $any($event.target).value
+                  )
+                "
+                placeholder="Nombre completo"
+              />
+
+            </div>
+
+            <div class="users-form-group">
+
+              <label for="email">
+                Correo electrónico
+              </label>
+
+              <input
+                id="email"
+                type="email"
+                [value]="email()"
+                (input)="
+                  updateEmail(
+                    $any($event.target).value
+                  )
+                "
+                placeholder="correo@ejemplo.com"
+              />
+
+            </div>
+
+            <div class="users-form-group">
+
+              <label for="password">
+                Contraseña
+              </label>
+
+              <input
+                id="password"
+                type="password"
+                [value]="password()"
+                (input)="
+                  updatePasswordField(
+                    $any($event.target).value
+                  )
+                "
+                placeholder="Mínimo 6 caracteres"
+              />
+
+            </div>
+
+            <div class="users-form-group">
+
+              <label for="role">
+                Rol
+              </label>
+
+              <select
+                id="role"
+                [value]="role()"
+                (change)="
+                  updateRole(
+                    $any($event.target).value
+                  )
+                "
+              >
+
+                <option value="CASHIER">
+                  Cajero
+                </option>
+
+                <option value="ADMIN">
+                  Administrador
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+          @if (createError()) {
+
+            <div class="users-error">
+              {{ createError() }}
+            </div>
+
+          }
+
+          <div class="users-form-actions">
+
+            <button
+              type="button"
+              class="btn-secondary"
+              [disabled]="creating()"
+              (click)="closeCreateForm()"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="button"
+              class="btn-primary"
+              [disabled]="creating()"
+              (click)="createUser()"
+            >
+
+              @if (creating()) {
+                Creando...
+              } @else {
+                Crear usuario
+              }
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    }
+
+    @if (loading()) {
+
+      <div class="users-state">
+        <span>
+          Cargando usuarios...
+        </span>
+      </div>
+
+    } @else if (error()) {
+
+      <div class="users-error">
+        {{ error() }}
+      </div>
+
+    } @else if (users().length === 0) {
+
+      <div class="users-state">
+        <span>
+          No hay usuarios registrados.
+        </span>
+      </div>
+
+    } @else {
+
+      <div class="users-table-wrapper">
+
+        <table class="users-table">
+
+          <thead>
+
+            <tr>
+
+              <th>
+                Usuario
+              </th>
+
+              <th>
+                Correo electrónico
+              </th>
+
+              <th>
+                Rol
+              </th>
+
+              <th>
+                Estado
+              </th>
+
+              <th class="users-table-actions">
+                Acción
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            @for (
+              user of users();
+              track user._id
+            ) {
+
+              <tr>
+
+                <td>
+
+                  <div class="user-cell">
+
+                    <div class="user-avatar">
+                      {{ user.name.charAt(0).toUpperCase() }}
+                    </div>
+
+                    <div class="user-info">
+
+                      <span class="user-name">
+                        {{ user.name }}
+                      </span>
+
+                      <span class="user-id">
+                        ID: {{ user._id }}
+                      </span>
+
+                    </div>
+
+                  </div>
+
+                </td>
+
+                <td>
+
+                  <span class="user-email">
+                    {{ user.email }}
+                  </span>
+
+                </td>
+
+                <td>
+
+                  @if (user.role === 'ADMIN') {
+
+                    <span class="badge badge-admin">
+                      Administrador
+                    </span>
+
+                  } @else {
+
+                    <span class="badge badge-cashier">
+                      Cajero
+                    </span>
+
+                  }
+
+                </td>
+
+                <td>
+
+                  <div class="user-status-control">
+
+                    <button
+                      type="button"
+                      class="status-switch"
+                      [class.status-switch-active]="
+                        user.status === 'ACTIVE'
+                      "
+                      [class.status-switch-loading]="
+                        updatingStatus() === user._id
+                      "
+                      [disabled]="
+                        updatingStatus() !== null
+                      "
+                      [attr.aria-checked]="
+                        user.status === 'ACTIVE'
+                      "
+                      [attr.aria-label]="
+                        user.status === 'ACTIVE'
+                          ? 'Desactivar usuario'
+                          : 'Activar usuario'
+                      "
+                      role="switch"
+                      (click)="updateUserStatus(user)"
+                    >
+
+                      <span class="status-switch-track">
+
+                        <span class="status-switch-thumb">
+                        </span>
+
+                      </span>
+
+                    </button>
+
+                    @if (user.status === 'ACTIVE') {
+
+                      <span class="status-switch-label status-switch-label-active">
+                        Activo
+                      </span>
+
+                    } @else {
+
+                      <span class="status-switch-label status-switch-label-inactive">
+                        Inactivo
+                      </span>
+
+                    }
+
+                  </div>
+
+                </td>
+
+                <td class="users-table-actions">
+
+                  <button
+                    type="button"
+                    class="btn-table"
+                    (click)="startEdit(user)"
+                  >
+                    Editar
+                  </button>
+
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    }
+
+    @if (statusError()) {
+
+      <div class="users-error">
+        {{ statusError() }}
+      </div>
+
+    }
+
+  </div>
+
+  @if (editingUser()) {
+
+    <div class="users-edit-card">
+
+      <div class="users-edit-header">
+
+        <div>
+
+          <span class="users-edit-eyebrow">
+            EDITAR USUARIO
+          </span>
+
+          <h2>
+            {{ editingUser()?.name }}
+          </h2>
+
+          <p>
+            Actualiza la información y el rol de este usuario.
+          </p>
+
+        </div>
+
+        <button
+          type="button"
+          class="btn-secondary"
+          (click)="cancelEdit()"
+        >
+          Cancelar
+        </button>
+
+      </div>
+
+      <div class="users-edit-body">
+
+        <div class="users-form-grid">
+
+          <div class="users-form-group">
+
+            <label for="editName">
+              Nombre completo
+            </label>
+
+            <input
+              id="editName"
+              type="text"
+              [value]="editName()"
+              (input)="
+                updateEditName(
+                  $any($event.target).value
+                )
+              "
+              placeholder="Nombre completo"
+            />
+
+          </div>
+
+          <div class="users-form-group">
+
+            <label for="editEmail">
+              Correo electrónico
+            </label>
+
+            <input
+              id="editEmail"
+              type="email"
+              [value]="editEmail()"
+              (input)="
+                updateEditEmail(
+                  $any($event.target).value
+                )
+              "
+              placeholder="correo@ejemplo.com"
+            />
+
+          </div>
+
+          <div class="users-form-group">
+
+            <label for="editRole">
+              Rol
+            </label>
+
+            <select
+              id="editRole"
+              [value]="editRole()"
+              (change)="
+                updateEditRole(
+                  $any($event.target).value
+                )
+              "
+            >
+
+              <option value="CASHIER">
+                Cajero
+              </option>
+
+              <option value="ADMIN">
+                Administrador
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+        @if (updateError()) {
+
+          <div class="users-error">
+            {{ updateError() }}
+          </div>
+
+        }
+
+        <div class="users-edit-actions">
+
+          <button
+            type="button"
+            class="btn-secondary"
+            [disabled]="updating()"
+            (click)="cancelEdit()"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="button"
+            class="btn-primary"
+            [disabled]="updating()"
+            (click)="updateUser()"
+          >
+
+            @if (updating()) {
+              Guardando...
+            } @else {
+              Guardar cambios
+            }
+
+          </button>
+
+        </div>
+
+        <div class="users-password-section">
+
+          <div class="users-password-header">
+
+            <div>
+
+              <span class="users-password-eyebrow">
+                SEGURIDAD
+              </span>
+
+              <h3>
+                Cambiar contraseña
+              </h3>
+
+              <p>
+                Establece una nueva contraseña para este usuario.
+              </p>
+
+            </div>
+
+          </div>
+
+          <div class="users-password-body">
+
+            <div class="users-form-group">
+
+              <label for="editPassword">
+                Nueva contraseña
+              </label>
+
+              <input
+                id="editPassword"
+                type="password"
+                [value]="editPassword()"
+                (input)="
+                  updateEditPassword(
+                    $any($event.target).value
+                  )
+                "
+                placeholder="Mínimo 6 caracteres"
+                autocomplete="new-password"
+              />
+
+              <span class="users-password-help">
+                La nueva contraseña debe tener mínimo 6 caracteres.
+              </span>
+
+            </div>
+
+            @if (passwordError()) {
+
+              <div class="users-error">
+                {{ passwordError() }}
+              </div>
+
+            }
+
+            <div class="users-password-actions">
+
+              <button
+                type="button"
+                class="btn-primary"
+                [disabled]="updatingPassword()"
+                (click)="changeUserPassword()"
+              >
+
+                @if (updatingPassword()) {
+                  Cambiando...
+                } @else {
+                  Cambiar contraseña
+                }
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  }
+
+</div>

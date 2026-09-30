@@ -1,0 +1,430 @@
+.cash-register {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-8);
+}
+
+.cash-register-header {
+  margin-bottom: var(--space-8);
+}
+
+.cash-register-eyebrow {
+  display: inline-block;
+  margin-bottom: var(--space-2);
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.cash-register-header h1 {
+  margin-bottom: var(--space-2);
+}
+
+.cash-register-header p {
+  max-width: 700px;
+}
+
+.cash-register-card {
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.cash-register-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.cash-register-card-header h2 {
+  margin-bottom: var(--space-2);
+}
+
+.cash-register-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+}
+
+.cash-register-status.closed {
+  border: 1px solid #fed7aa;
+  background: var(--color-warning-light);
+}
+
+.cash-register-status.opened {
+  border: 1px solid #bbf7d0;
+  background: var(--color-success-light);
+}
+
+.cash-register-status-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--color-surface);
+  font-size: 22px;
+}
+
+.cash-register-status strong {
+  display: block;
+  margin-bottom: var(--space-1);
+  color: var(--color-text-primary);
+}
+
+.cash-register-status p {
+  font-size: 13px;
+}
+
+.cash-register-form {
+  margin-top: var(--space-6);
+}
+
+.cash-register-form label {
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cash-input {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  transition:
+    border-color var(--transition-normal),
+    box-shadow var(--transition-normal);
+}
+
+.cash-input:focus-within {
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 10%);
+}
+
+.cash-input > span {
+  padding-left: 14px;
+  color: var(--color-text-secondary);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.cash-input input {
+  width: 100%;
+  padding: 12px 14px 12px 8px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: 16px;
+}
+
+.cash-register-form small {
+  display: block;
+  margin-top: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.cash-register-error {
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-md);
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+}
+
+.cash-register-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.btn-primary {
+  padding: 11px 18px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--transition-normal),
+    transform var(--transition-fast);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.btn-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.cash-register-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.cash-register-badge.open {
+  background: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.cash-register-badge.closed {
+  background: var(--color-warning-light);
+  color: var(--color-warning);
+}
+
+.cash-register-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.cash-register-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-hover);
+}
+
+.cash-register-summary-item span {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cash-register-summary-item strong {
+  color: var(--color-text-primary);
+  font-size: 20px;
+}
+
+.cash-register-summary-item.highlight {
+  border-color: #bfdbfe;
+  background: var(--color-primary-light);
+}
+
+.cash-register-summary-item.highlight strong {
+  color: var(--color-primary);
+  font-size: 24px;
+}
+
+.cash-register-message {
+  padding: var(--space-8);
+  text-align: center;
+}
+
+.cash-register-close {
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.cash-register-close-header {
+  margin-bottom: var(--space-2);
+}
+
+.cash-register-close-header h3 {
+  margin-bottom: var(--space-2);
+  color: var(--color-text-primary);
+  font-size: 18px;
+}
+
+.cash-register-close-header p {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+/* Historial de movimientos */
+
+.movements-card {
+  margin-top: var(--space-6);
+}
+
+.cash-register-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.cash-register-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+}
+
+.cash-register-table th {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-hover);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.cash-register-table td {
+  padding: 15px 16px;
+  border-bottom: 1px solid var(--color-border-light);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.cash-register-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.cash-register-table tbody tr:hover {
+  background: var(--color-surface-hover);
+}
+
+.cash-register-table td:first-child {
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.cash-register-table td:nth-child(4) {
+  min-width: 220px;
+}
+
+.cash-register-table td:nth-child(5) {
+  max-width: 180px;
+  color: var(--color-text-muted);
+  font-family: monospace;
+  font-size: 11px;
+  word-break: break-all;
+}
+
+.cash-movement-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 68px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.cash-movement-badge.in {
+  background: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.cash-movement-badge.out {
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+}
+
+.cash-amount-in {
+  color: var(--color-success) !important;
+  white-space: nowrap;
+}
+
+.cash-amount-out {
+  color: var(--color-danger) !important;
+  white-space: nowrap;
+}
+
+.cash-register-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  padding: var(--space-8);
+  text-align: center;
+}
+
+.cash-register-empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: var(--space-4);
+  border-radius: 50%;
+  background: var(--color-surface-hover);
+  font-size: 24px;
+}
+
+.cash-register-empty strong {
+  margin-bottom: var(--space-2);
+  color: var(--color-text-primary);
+}
+
+.cash-register-empty p {
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+@media (max-width: 800px) {
+  .cash-register {
+    padding: var(--space-5);
+  }
+
+  .cash-register-card-header {
+    flex-direction: column;
+  }
+
+  .cash-register-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .cash-register {
+    padding: var(--space-4);
+  }
+
+  .cash-register-card {
+    padding: var(--space-4);
+  }
+
+  .cash-register-status {
+    align-items: flex-start;
+  }
+
+  .cash-register-actions {
+    flex-direction: column;
+  }
+
+  .cash-register-actions .btn-primary {
+    width: 100%;
+  }
+
+  .movements-card {
+    padding: var(--space-4);
+  }
+}

@@ -1,0 +1,197 @@
+<div class="categories">
+  <div class="categories-header">
+    <div>
+      <h1>Categorías</h1>
+
+      <p>
+        Gestiona las categorías de productos de la tienda.
+      </p>
+    </div>
+
+    <button
+      class="btn-primary"
+      type="button"
+      (click)="openCreateForm()"
+    >
+      + Nueva categoría
+    </button>
+  </div>
+
+  @if (showCreateForm) {
+    <div class="create-category-card">
+      <div class="create-category-header">
+        <div>
+          <h2>
+            {{
+              editingCategoryId
+                ? 'Editar categoría'
+                : 'Nueva categoría'
+            }}
+          </h2>
+
+          <p>
+            {{
+              editingCategoryId
+                ? 'Modifica la información de la categoría seleccionada.'
+                : 'Registra una nueva categoría para los productos de la tienda.'
+            }}
+          </p>
+        </div>
+
+        <button
+          class="btn-close"
+          type="button"
+          (click)="closeCreateForm()"
+        >
+          ×
+        </button>
+      </div>
+
+      @if (errorMessage() !== null) {
+        <div class="error-message">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <div class="form-group">
+        <label for="categoryName">
+          Nombre
+        </label>
+
+        <input
+          id="categoryName"
+          type="text"
+          placeholder="Ej. Cuidado facial"
+          [(ngModel)]="categoryName"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="categoryDescription">
+          Descripción
+        </label>
+
+        <textarea
+          id="categoryDescription"
+          rows="4"
+          placeholder="Describe los productos que pertenecen a esta categoría"
+          [(ngModel)]="categoryDescription"
+        ></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button
+          class="btn-secondary"
+          type="button"
+          (click)="closeCreateForm()"
+        >
+          Cancelar
+        </button>
+
+        @if (editingCategoryId) {
+          <button
+            class="btn-primary"
+            type="button"
+            (click)="updateCategory()"
+          >
+            Guardar cambios
+          </button>
+        } @else {
+          <button
+            class="btn-primary"
+            type="button"
+            (click)="createCategory()"
+          >
+            Guardar categoría
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <div class="categories-card">
+    <div class="table-header">
+      <div>
+        <h2>Listado de categorías</h2>
+
+        <p>
+          Categorías disponibles en el sistema.
+        </p>
+      </div>
+
+      <span class="category-count">
+        {{ categories().length }} categorías
+      </span>
+    </div>
+
+    <div class="categories-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Estado</th>
+            <th class="actions-column">Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (
+            category of categories();
+            track category._id
+          ) {
+            <tr>
+              <td>
+                <div class="category-name">
+                  <div class="category-icon">
+                    {{ category.name.charAt(0) }}
+                  </div>
+
+                  <span>
+                    {{ category.name }}
+                  </span>
+                </div>
+              </td>
+
+              <td class="description">
+                {{ category.description }}
+              </td>
+
+              <td>
+                <span
+                  class="status"
+                  [class.active]="category.status === 'ACTIVE'"
+                  [class.inactive]="category.status === 'INACTIVE'"
+                >
+                  {{
+                    category.status === 'ACTIVE'
+                      ? 'Activa'
+                      : 'Inactiva'
+                  }}
+                </span>
+              </td>
+
+              <td class="actions">
+                <button
+                  class="btn-action"
+                  type="button"
+                  (click)="openEditForm(category)"
+                >
+                  Editar
+                </button>
+
+                <button
+                  class="btn-action delete"
+                  type="button"
+                  (click)="deleteCategory(category)"
+                >
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,394 @@
+<div class="dashboard">
+
+  <div class="dashboard-header">
+
+    <div>
+      <span class="dashboard-eyebrow">
+        STORE SYSTEM
+      </span>
+
+      <h1>
+        Dashboard
+      </h1>
+
+      <p>
+        Administra y controla las operaciones de tu tienda
+        desde un solo lugar.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="logout-button"
+      (click)="logout()"
+    >
+      Cerrar sesión
+    </button>
+
+  </div>
+
+
+  <!-- Estadísticas -->
+
+  <section class="dashboard-stats">
+
+    <article class="stat-card">
+
+      <div class="stat-card-header">
+        <span class="stat-card-icon">
+          💰
+        </span>
+
+        <span class="stat-card-label">
+          Ventas realizadas
+        </span>
+      </div>
+
+      @if (loadingStats()) {
+
+        <strong class="stat-card-loading">
+          ...
+        </strong>
+
+      } @else {
+
+        <strong class="stat-card-value">
+          {{ totalSales() }}
+        </strong>
+
+      }
+
+    </article>
+
+
+    <article class="stat-card">
+
+      <div class="stat-card-header">
+        <span class="stat-card-icon">
+          💵
+        </span>
+
+        <span class="stat-card-label">
+          Dinero vendido
+        </span>
+      </div>
+
+      @if (loadingStats()) {
+
+        <strong class="stat-card-loading">
+          ...
+        </strong>
+
+      } @else {
+
+        <strong class="stat-card-value">
+          {{ totalSalesAmount() | number:'1.0-2' }}
+        </strong>
+
+      }
+
+    </article>
+
+
+    <article class="stat-card">
+
+      <div class="stat-card-header">
+        <span class="stat-card-icon">
+          📈
+        </span>
+
+        <span class="stat-card-label">
+          Venta promedio
+        </span>
+      </div>
+
+      @if (loadingStats()) {
+
+        <strong class="stat-card-loading">
+          ...
+        </strong>
+
+      } @else {
+
+        <strong class="stat-card-value">
+          {{ averageSale() | number:'1.0-2' }}
+        </strong>
+
+      }
+
+    </article>
+
+
+    <article class="stat-card">
+
+      <div class="stat-card-header">
+        <span class="stat-card-icon">
+          📦
+        </span>
+
+        <span class="stat-card-label">
+          Productos registrados
+        </span>
+      </div>
+
+      @if (loadingStats()) {
+
+        <strong class="stat-card-loading">
+          ...
+        </strong>
+
+      } @else {
+
+        <strong class="stat-card-value">
+          {{ totalProducts() }}
+        </strong>
+
+      }
+
+    </article>
+
+
+    <article
+      class="stat-card"
+      [class.stat-card-warning]="
+        lowStockProducts() > 0
+      "
+    >
+
+      <div class="stat-card-header">
+
+        <span class="stat-card-icon">
+          ⚠️
+        </span>
+
+        <span class="stat-card-label">
+          Stock bajo
+        </span>
+
+      </div>
+
+      @if (loadingStats()) {
+
+        <strong class="stat-card-loading">
+          ...
+        </strong>
+
+      } @else {
+
+        <strong class="stat-card-value">
+          {{ lowStockProducts() }}
+        </strong>
+
+      }
+
+    </article>
+
+  </section>
+
+
+  <!-- Accesos a módulos -->
+
+  <section class="dashboard-modules">
+
+    <div class="dashboard-section-header">
+
+      <div>
+
+        <h2>
+          Módulos del sistema
+        </h2>
+
+        <p>
+          Accede rápidamente a las principales funciones
+          de Store System.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div class="dashboard-grid">
+
+      <a
+        class="dashboard-card"
+        routerLink="/products"
+      >
+
+        <div class="dashboard-card-icon">
+          📦
+        </div>
+
+        <div class="dashboard-card-content">
+
+          <h2>
+            Productos
+          </h2>
+
+          <p>
+            Gestiona los productos, precios, stock y
+            categorías de la tienda.
+          </p>
+
+        </div>
+
+        <span class="dashboard-card-arrow">
+          →
+        </span>
+
+      </a>
+
+
+      <a
+        class="dashboard-card"
+        routerLink="/categories"
+      >
+
+        <div class="dashboard-card-icon">
+          🗂️
+        </div>
+
+        <div class="dashboard-card-content">
+
+          <h2>
+            Categorías
+          </h2>
+
+          <p>
+            Organiza y administra las categorías de tus
+            productos.
+          </p>
+
+        </div>
+
+        <span class="dashboard-card-arrow">
+          →
+        </span>
+
+      </a>
+
+
+      <a
+        class="dashboard-card"
+        routerLink="/sales"
+      >
+
+        <div class="dashboard-card-icon">
+          🛒
+        </div>
+
+        <div class="dashboard-card-content">
+
+          <h2>
+            Ventas
+          </h2>
+
+          <p>
+            Registra y consulta las ventas realizadas
+            en la tienda.
+          </p>
+
+        </div>
+
+        <span class="dashboard-card-arrow">
+          →
+        </span>
+
+      </a>
+
+
+      <a
+        class="dashboard-card"
+        routerLink="/cash-register"
+      >
+
+        <div class="dashboard-card-icon">
+          💰
+        </div>
+
+        <div class="dashboard-card-content">
+
+          <h2>
+            Caja
+          </h2>
+
+          <p>
+            Administra la apertura, movimientos y cierre
+            de la caja de la tienda.
+          </p>
+
+        </div>
+
+        <span class="dashboard-card-arrow">
+          →
+        </span>
+
+      </a>
+
+
+      <a
+        class="dashboard-card"
+        routerLink="/reports"
+      >
+
+        <div class="dashboard-card-icon">
+          📊
+        </div>
+
+        <div class="dashboard-card-content">
+
+          <h2>
+            Reportes
+          </h2>
+
+          <p>
+            Consulta información de ventas, inventario
+            y comportamiento de los productos.
+          </p>
+
+        </div>
+
+        <span class="dashboard-card-arrow">
+          →
+        </span>
+
+      </a>
+
+
+      @if (isAdmin()) {
+
+        <a
+          class="dashboard-card"
+          routerLink="/users"
+        >
+
+          <div class="dashboard-card-icon">
+            👥
+          </div>
+
+          <div class="dashboard-card-content">
+
+            <h2>
+              Usuarios
+            </h2>
+
+            <p>
+              Administra los usuarios y sus roles de acceso
+              al sistema.
+            </p>
+
+          </div>
+
+          <span class="dashboard-card-arrow">
+            →
+          </span>
+
+        </a>
+
+      }
+
+    </div>
+
+  </section>
+
+</div>

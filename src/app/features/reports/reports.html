@@ -1,0 +1,553 @@
+<div class="reports">
+
+  <div class="reports-header">
+    <div>
+      <h1>Reportes</h1>
+
+      <p>
+        Consulta información de ventas, inventario
+        y comportamiento de los productos.
+      </p>
+    </div>
+  </div>
+
+  <section class="filters">
+
+    <div class="filter-group">
+      <label for="startDate">
+        Fecha inicial
+      </label>
+
+      <input
+        id="startDate"
+        type="date"
+        [(ngModel)]="startDate"
+      />
+    </div>
+
+    <div class="filter-group">
+      <label for="endDate">
+        Fecha final
+      </label>
+
+      <input
+        id="endDate"
+        type="date"
+        [(ngModel)]="endDate"
+      />
+    </div>
+
+    <div class="filter-actions">
+
+      <button
+        type="button"
+        class="btn-primary"
+        (click)="applyFilters()"
+      >
+        Aplicar filtros
+      </button>
+
+      <button
+        type="button"
+        class="btn-secondary"
+        (click)="clearFilters()"
+      >
+        Limpiar
+      </button>
+
+    </div>
+
+  </section>
+
+  @if (
+    !salesReport &&
+    !inventoryReport &&
+    !lowStockReport &&
+    !inventoryValueReport &&
+    !bestSellingProductsReport &&
+    loading
+  ) {
+
+    <div class="state-message">
+
+      <p>
+        Cargando reportes...
+      </p>
+
+    </div>
+
+  }
+
+  @if (errorMessage) {
+
+    <div class="state-message error">
+
+      <p>
+        {{ errorMessage }}
+      </p>
+
+    </div>
+
+  }
+
+  @if (salesReport) {
+
+    <section class="report-section">
+
+      <div class="section-header">
+
+        <div>
+
+          <h2>
+            Resumen de ventas
+          </h2>
+
+          <p>
+            Información general de las ventas
+            completadas.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="cards-grid">
+
+        <article class="report-card">
+
+          <span class="card-label">
+            Total de ventas
+          </span>
+
+          <strong>
+            {{ salesReport.totalSales }}
+          </strong>
+
+        </article>
+
+        <article class="report-card">
+
+          <span class="card-label">
+            Ventas totales
+          </span>
+
+          <strong>
+            {{ salesReport.totalAmount | number:'1.0-2' }}
+          </strong>
+
+        </article>
+
+        <article class="report-card">
+
+          <span class="card-label">
+            Venta promedio
+          </span>
+
+          <strong>
+            {{ salesReport.averageSale | number:'1.0-2' }}
+          </strong>
+
+        </article>
+
+        <article class="report-card">
+
+          <span class="card-label">
+            Descuentos
+          </span>
+
+          <strong>
+            {{ salesReport.discountAmount | number:'1.0-2' }}
+          </strong>
+
+        </article>
+
+      </div>
+
+      <div class="payment-section">
+
+        <h3>
+          Métodos de pago
+        </h3>
+
+        <div class="payment-grid">
+
+          <article class="payment-card">
+
+            <span>
+              Efectivo
+            </span>
+
+            <strong>
+              {{ salesReport.cashAmount | number:'1.0-2' }}
+            </strong>
+
+          </article>
+
+          <article class="payment-card">
+
+            <span>
+              Tarjeta
+            </span>
+
+            <strong>
+              {{ salesReport.cardAmount | number:'1.0-2' }}
+            </strong>
+
+          </article>
+
+          <article class="payment-card">
+
+            <span>
+              Transferencia
+            </span>
+
+            <strong>
+              {{ salesReport.transferAmount | number:'1.0-2' }}
+            </strong>
+
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  }
+
+  @if (inventoryReport) {
+
+    <section class="report-section">
+
+      <div class="section-header">
+
+        <div>
+
+          <h2>
+            Resumen de inventario
+          </h2>
+
+          <p>
+            Estado actual de los productos
+            registrados.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="cards-grid">
+
+        <article class="report-card">
+
+          <span class="card-label">
+            Total de productos
+          </span>
+
+          <strong>
+            {{ inventoryReport.totalProducts }}
+          </strong>
+
+        </article>
+
+        <article class="report-card">
+
+          <span class="card-label">
+            Productos activos
+          </span>
+
+          <strong>
+            {{ inventoryReport.activeProducts }}
+          </strong>
+
+        </article>
+
+        <article class="report-card">
+
+          <span class="card-label">
+            Productos inactivos
+          </span>
+
+          <strong>
+            {{ inventoryReport.inactiveProducts }}
+          </strong>
+
+        </article>
+
+        <article class="report-card">
+
+          <span class="card-label">
+            Stock bajo
+          </span>
+
+          <strong>
+            {{ inventoryReport.lowStockProducts }}
+          </strong>
+
+        </article>
+
+      </div>
+
+    </section>
+
+  }
+
+  @if (inventoryValueReport) {
+
+    <section class="report-section">
+
+      <div class="section-header">
+
+        <div>
+
+          <h2>
+            Valor del inventario
+          </h2>
+
+          <p>
+            Valor actual de los productos
+            disponibles.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="cards-grid">
+
+        <article class="report-card">
+
+          <span class="card-label">
+            Valor de compra
+          </span>
+
+          <strong>
+            {{ inventoryValueReport.purchaseValue | number:'1.0-2' }}
+          </strong>
+
+        </article>
+
+        <article class="report-card">
+
+          <span class="card-label">
+            Valor de venta
+          </span>
+
+          <strong>
+            {{ inventoryValueReport.saleValue | number:'1.0-2' }}
+          </strong>
+
+        </article>
+
+        <article class="report-card">
+
+          <span class="card-label">
+            Margen potencial
+          </span>
+
+          <strong>
+            {{ inventoryValueReport.potentialMargin | number:'1.0-2' }}
+          </strong>
+
+        </article>
+
+      </div>
+
+    </section>
+
+  }
+
+  @if (lowStockReport) {
+
+    <section class="report-section">
+
+      <div class="section-header">
+
+        <div>
+
+          <h2>
+            Productos con stock bajo
+          </h2>
+
+          <p>
+            Productos que requieren atención
+            por su nivel de inventario.
+          </p>
+
+        </div>
+
+      </div>
+
+      @if (
+        lowStockReport.products.length > 0
+      ) {
+
+        <div class="table-wrapper">
+
+          <table>
+
+            <thead>
+
+              <tr>
+                <th>Producto</th>
+                <th>SKU</th>
+                <th>Stock</th>
+                <th>Mínimo</th>
+                <th>Diferencia</th>
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              @for (
+                product of lowStockReport.products;
+                track product.name
+              ) {
+
+                <tr>
+
+                  <td>
+                    {{ product.name }}
+                  </td>
+
+                  <td>
+                    {{ product.sku || '-' }}
+                  </td>
+
+                  <td>
+                    {{ product.stock }}
+                  </td>
+
+                  <td>
+                    {{ product.minStock }}
+                  </td>
+
+                  <td>
+                    {{ product.difference }}
+                  </td>
+
+                </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      } @else {
+
+        <div class="empty-state">
+
+          <p>
+            No hay productos con stock bajo.
+          </p>
+
+        </div>
+
+      }
+
+    </section>
+
+  }
+
+  @if (bestSellingProductsReport) {
+
+    <section class="report-section">
+
+      <div class="section-header">
+
+        <div>
+
+          <h2>
+            Productos más vendidos
+          </h2>
+
+          <p>
+            Productos con mayor cantidad de
+            unidades vendidas.
+          </p>
+
+        </div>
+
+      </div>
+
+      @if (
+        bestSellingProductsReport.products.length > 0
+      ) {
+
+        <div class="table-wrapper">
+
+          <table>
+
+            <thead>
+
+              <tr>
+                <th>Producto</th>
+                <th>SKU</th>
+                <th>Código de barras</th>
+                <th>Unidades vendidas</th>
+                <th>Total vendido</th>
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              @for (
+                product of bestSellingProductsReport.products;
+                track product.productId
+              ) {
+
+                <tr>
+
+                  <td>
+                    {{ product.name }}
+                  </td>
+
+                  <td>
+                    {{ product.sku || '-' }}
+                  </td>
+
+                  <td>
+                    {{ product.barcode || '-' }}
+                  </td>
+
+                  <td>
+                    {{ product.quantitySold }}
+                  </td>
+
+                  <td>
+                    {{ product.totalAmount | number:'1.0-2' }}
+                  </td>
+
+                </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      } @else {
+
+        <div class="empty-state">
+
+          <p>
+            No hay productos vendidos en el
+            período seleccionado.
+          </p>
+
+        </div>
+
+      }
+
+    </section>
+
+  }
+
+</div>
