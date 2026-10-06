@@ -1,12 +1,7 @@
 import { Routes } from '@angular/router';
 
-import {
-  authGuard,
-} from './core/guards/auth-guard';
-
-import {
-  adminGuard,
-} from './core/guards/admin-guard';
+import { authGuard } from './core/guards/auth-guard';
+import { adminGuard } from './core/guards/admin-guard';
 
 export const routes: Routes = [
   {
@@ -18,85 +13,100 @@ export const routes: Routes = [
   {
     path: 'login',
     loadComponent: () =>
-      import('./features/auth/login/login').then(
-        (m) => m.Login,
-      ),
+      import('./features/auth/login/login')
+        .then((m) => m.Login),
   },
 
   {
     path: 'forgot-password',
     loadComponent: () =>
-      import(
-        './features/auth/forgot-password/forgot-password'
-      ).then(
-        (m) => m.ForgotPassword,
-      ),
+      import('./features/auth/forgot-password/forgot-password')
+        .then((m) => m.ForgotPassword),
   },
 
   {
     path: 'reset-password',
     loadComponent: () =>
-      import(
-        './features/auth/reset-password/reset-password'
-      ).then(
-        (m) => m.ResetPassword,
-      ),
+      import('./features/auth/reset-password/reset-password')
+        .then((m) => m.ResetPassword),
   },
 
   {
     path: 'dashboard',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/dashboard/dashboard').then(
-        (m) => m.Dashboard,
-      ),
+      import('./features/dashboard/dashboard')
+        .then((m) => m.Dashboard),
   },
 
   {
     path: 'categories',
-    canActivate: [authGuard],
+    canActivate: [
+      authGuard,
+      adminGuard,
+    ],
     loadComponent: () =>
-      import('./features/categories/categories').then(
-        (m) => m.Categories,
-      ),
+      import('./features/categories/categories')
+        .then((m) => m.Categories),
   },
 
   {
     path: 'products',
+    canActivate: [
+      authGuard,
+      adminGuard,
+    ],
+    loadComponent: () =>
+      import('./features/products/products')
+        .then((m) => m.Products),
+  },
+
+  {
+    path: 'inventory',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/products/products').then(
-        (m) => m.Products,
-      ),
+      import('./features/inventory/inventory')
+        .then((m) => m.Inventory),
   },
 
   {
     path: 'sales',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/sales/sales').then(
-        (m) => m.Sales,
-      ),
+      import('./features/sales/sales')
+        .then((m) => m.Sales),
   },
 
   {
     path: 'cash-register',
     canActivate: [authGuard],
     loadComponent: () =>
-      import(
-        './features/cash-register/cash-register'
-      ).then(
-        (m) => m.CashRegisterComponent,
-      ),
+      import('./features/cash-register/cash-register')
+        .then((m) => m.CashRegisterComponent),
   },
 
   {
     path: 'reports',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/reports/reports').then(
-        (m) => m.Reports,
-      ),
+      import('./features/reports/reports')
+        .then((m) => m.Reports),
+  },
+
+  {
+    path: 'invoicing',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/invoicing/invoicing')
+        .then((m) => m.Invoicing),
+  },
+
+  {
+    path: 'credit-debit-notes',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/credit-debit-notes/credit-debit-notes')
+        .then((m) => m.CreditDebitNotes),
   },
 
   {
@@ -106,8 +116,7 @@ export const routes: Routes = [
       adminGuard,
     ],
     loadComponent: () =>
-      import('./features/users/users').then(
-        (m) => m.UsersComponent,
-      ),
+      import('./features/users/users')
+        .then((m) => m.UsersComponent),
   },
 ];

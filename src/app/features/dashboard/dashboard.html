@@ -36,7 +36,7 @@
 
       <div class="stat-card-header">
         <span class="stat-card-icon">
-          💰
+          &#128176;
         </span>
 
         <span class="stat-card-label">
@@ -65,7 +65,7 @@
 
       <div class="stat-card-header">
         <span class="stat-card-icon">
-          💵
+          &#128181;
         </span>
 
         <span class="stat-card-label">
@@ -94,7 +94,7 @@
 
       <div class="stat-card-header">
         <span class="stat-card-icon">
-          📈
+          &#128200;
         </span>
 
         <span class="stat-card-label">
@@ -123,7 +123,7 @@
 
       <div class="stat-card-header">
         <span class="stat-card-icon">
-          📦
+          &#128230;
         </span>
 
         <span class="stat-card-label">
@@ -158,7 +158,7 @@
       <div class="stat-card-header">
 
         <span class="stat-card-icon">
-          ⚠️
+          &#9888;&#65039;
         </span>
 
         <span class="stat-card-label">
@@ -210,62 +210,66 @@
 
     <div class="dashboard-grid">
 
-      <a
-        class="dashboard-card"
-        routerLink="/products"
-      >
+      @if (isAdmin()) {
 
-        <div class="dashboard-card-icon">
-          📦
-        </div>
+        <a
+          class="dashboard-card"
+          routerLink="/products"
+        >
 
-        <div class="dashboard-card-content">
+          <div class="dashboard-card-icon">
+            &#128230;
+          </div>
 
-          <h2>
-            Productos
-          </h2>
+          <div class="dashboard-card-content">
 
-          <p>
-            Gestiona los productos, precios, stock y
-            categorías de la tienda.
-          </p>
+            <h2>
+              Productos
+            </h2>
 
-        </div>
+            <p>
+              Gestiona los productos, precios, stock y
+              categorías de la tienda.
+            </p>
 
-        <span class="dashboard-card-arrow">
-          →
-        </span>
+          </div>
 
-      </a>
+          <span class="dashboard-card-arrow">
+            &rarr;
+          </span>
+
+        </a>
 
 
-      <a
-        class="dashboard-card"
-        routerLink="/categories"
-      >
+        <a
+          class="dashboard-card"
+          routerLink="/categories"
+        >
 
-        <div class="dashboard-card-icon">
-          🗂️
-        </div>
+          <div class="dashboard-card-icon">
+            &#128452;
+          </div>
 
-        <div class="dashboard-card-content">
+          <div class="dashboard-card-content">
 
-          <h2>
-            Categorías
-          </h2>
+            <h2>
+              Categorías
+            </h2>
 
-          <p>
-            Organiza y administra las categorías de tus
-            productos.
-          </p>
+            <p>
+              Organiza y administra las categorías de tus
+              productos.
+            </p>
 
-        </div>
+          </div>
 
-        <span class="dashboard-card-arrow">
-          →
-        </span>
+          <span class="dashboard-card-arrow">
+            &rarr;
+          </span>
 
-      </a>
+        </a>
+
+      }
 
 
       <a
@@ -274,7 +278,7 @@
       >
 
         <div class="dashboard-card-icon">
-          🛒
+          &#128722;
         </div>
 
         <div class="dashboard-card-content">
@@ -291,7 +295,98 @@
         </div>
 
         <span class="dashboard-card-arrow">
-          →
+          &rarr;
+        </span>
+
+      </a>
+
+
+      <!-- Inventario -->
+
+      <a
+        class="dashboard-card"
+        routerLink="/inventory"
+      >
+
+        <div class="dashboard-card-icon">
+          &#128230;
+        </div>
+
+        <div class="dashboard-card-content">
+
+          <h2>
+            Inventario
+          </h2>
+
+          <p>
+            Controla las entradas, salidas, ajustes y
+            existencias de los productos.
+          </p>
+
+        </div>
+
+        <span class="dashboard-card-arrow">
+          &rarr;
+        </span>
+
+      </a>
+
+
+      <a
+        class="dashboard-card"
+        routerLink="/invoicing"
+      >
+
+        <div class="dashboard-card-icon">
+          &#129534;
+        </div>
+
+        <div class="dashboard-card-content">
+
+          <h2>
+            Facturación
+          </h2>
+
+          <p>
+            Consulta y administra las facturas generadas
+            a partir de las ventas.
+          </p>
+
+        </div>
+
+        <span class="dashboard-card-arrow">
+          &rarr;
+        </span>
+
+      </a>
+
+
+      <!-- Notas crédito y débito -->
+
+      <a
+        class="dashboard-card"
+        routerLink="/credit-debit-notes"
+      >
+
+        <div class="dashboard-card-icon">
+          &#128221;
+        </div>
+
+        <div class="dashboard-card-content">
+
+          <h2>
+            Notas crédito y débito
+          </h2>
+
+          <p>
+            Gestiona las notas crédito y débito asociadas
+            a las facturas de la tienda.
+          </p>
+
+        </div>
+
+        <span class="dashboard-card-arrow">
+          &rarr;
         </span>
 
       </a>
@@ -303,7 +398,7 @@
       >
 
         <div class="dashboard-card-icon">
-          💰
+          &#128176;
         </div>
 
         <div class="dashboard-card-content">
@@ -320,7 +415,7 @@
         </div>
 
         <span class="dashboard-card-arrow">
-          →
+          &rarr;
         </span>
 
       </a>
@@ -332,7 +427,7 @@
       >
 
         <div class="dashboard-card-icon">
-          📊
+          &#128202;
         </div>
 
         <div class="dashboard-card-content">
@@ -349,7 +444,7 @@
         </div>
 
         <span class="dashboard-card-arrow">
-          →
+          &rarr;
         </span>
 
       </a>
@@ -363,7 +458,7 @@
         >
 
           <div class="dashboard-card-icon">
-            👥
+            &#128101;
           </div>
 
           <div class="dashboard-card-content">
@@ -380,7 +475,7 @@
           </div>
 
           <span class="dashboard-card-arrow">
-            →
+            &rarr;
           </span>
 
         </a>

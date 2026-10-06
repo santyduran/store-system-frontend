@@ -26,6 +26,7 @@ import {
 interface SalesReport {
   totalSales: number;
   subtotalAmount: number;
+  taxAmount: number;
   discountAmount: number;
   totalAmount: number;
   averageSale: number;
@@ -77,16 +78,13 @@ interface BestSellingProductsReport {
 
 @Component({
   selector: 'app-reports',
-
   host: {
     ngSkipHydration: 'true',
   },
-
   imports: [
     FormsModule,
     DecimalPipe,
   ],
-
   templateUrl: './reports.html',
   styleUrl: './reports.scss',
 })
@@ -119,9 +117,11 @@ export class Reports implements OnInit {
 
   endDate = '';
 
-  loading = true;
+  loading = false;
 
   errorMessage = '';
+
+  private pendingRequests = 0;
 
   constructor(
     private readonly http: HttpClient,
@@ -129,21 +129,12 @@ export class Reports implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    console.log(
-      '[REPORTS] ngOnInit ejecutado',
-    );
-
     if (
       !isPlatformBrowser(
         this.platformId,
       )
     ) {
-      console.log(
-        '[REPORTS] SSR detectado. No se realizan peticiones.',
-      );
-
       this.loading = false;
-
       return;
     }
 
@@ -151,10 +142,6 @@ export class Reports implements OnInit {
   }
 
   loadReports(): void {
-    console.log(
-      '[REPORTS] loadReports ejecutado',
-    );
-
     this.loading = true;
     this.errorMessage = '';
 
@@ -164,6 +151,8 @@ export class Reports implements OnInit {
     this.inventoryValueReport = null;
     this.bestSellingProductsReport = null;
 
+    this.pendingRequests = 5;
+
     this.loadSalesReport();
     this.loadInventoryReport();
     this.loadLowStockReport();
@@ -172,10 +161,6 @@ export class Reports implements OnInit {
   }
 
   loadSalesReport(): void {
-    console.log(
-      '[REPORTS] Solicitando /sales',
-    );
-
     const params =
       this.createDateParams();
 
@@ -186,154 +171,77 @@ export class Reports implements OnInit {
       )
       .subscribe({
         next: (response) => {
-          console.log(
-            '[REPORTS] /sales respondió:',
-            response,
-          );
-
           this.salesReport = response;
-          this.loading = false;
-
-          this.changeDetectorRef.detectChanges();
+          this.finishRequest();
         },
-
-        error: (error) => {
-          console.error(
-            '[REPORTS] Error en /sales:',
-            error,
+        error: () => {
+          this.setError(
+            'No fue posible cargar el reporte de ventas.',
           );
-
-          this.errorMessage =
-            'No fue posible cargar el reporte de ventas.';
-
-          this.loading = false;
-
-          this.changeDetectorRef.detectChanges();
+          this.finishRequest();
         },
       });
   }
 
   loadInventoryReport(): void {
-    console.log(
-      '[REPORTS] Solicitando /inventory',
-    );
-
     this.http
       .get<InventoryReport>(
         `${this.apiUrl}/inventory`,
       )
       .subscribe({
         next: (response) => {
-          console.log(
-            '[REPORTS] /inventory respondió:',
-            response,
-          );
-
           this.inventoryReport = response;
-          this.loading = false;
-
-          this.changeDetectorRef.detectChanges();
+          this.finishRequest();
         },
-
-        error: (error) => {
-          console.error(
-            '[REPORTS] Error en /inventory:',
-            error,
+        error: () => {
+          this.setError(
+            'No fue posible cargar el reporte de inventario.',
           );
-
-          this.errorMessage =
-            'No fue posible cargar el reporte de inventario.';
-
-          this.loading = false;
-
-          this.changeDetectorRef.detectChanges();
+          this.finishRequest();
         },
       });
   }
 
   loadLowStockReport(): void {
-    console.log(
-      '[REPORTS] Solicitando /low-stock',
-    );
-
     this.http
       .get<LowStockReport>(
         `${this.apiUrl}/low-stock`,
       )
       .subscribe({
         next: (response) => {
-          console.log(
-            '[REPORTS] /low-stock respondió:',
-            response,
-          );
-
           this.lowStockReport = response;
-          this.loading = false;
-
-          this.changeDetectorRef.detectChanges();
+          this.finishRequest();
         },
-
-        error: (error) => {
-          console.error(
-            '[REPORTS] Error en /low-stock:',
-            error,
+        error: () => {
+          this.setError(
+            'No fue posible cargar el reporte de stock bajo.',
           );
-
-          this.errorMessage =
-            'No fue posible cargar el reporte de stock bajo.';
-
-          this.loading = false;
-
-          this.changeDetectorRef.detectChanges();
+          this.finishRequest();
         },
       });
   }
 
   loadInventoryValueReport(): void {
-    console.log(
-      '[REPORTS] Solicitando /inventory-value',
-    );
-
     this.http
       .get<InventoryValueReport>(
         `${this.apiUrl}/inventory-value`,
       )
       .subscribe({
         next: (response) => {
-          console.log(
-            '[REPORTS] /inventory-value respondió:',
-            response,
-          );
-
           this.inventoryValueReport =
             response;
-
-          this.loading = false;
-
-          this.changeDetectorRef.detectChanges();
+          this.finishRequest();
         },
-
-        error: (error) => {
-          console.error(
-            '[REPORTS] Error en /inventory-value:',
-            error,
+        error: () => {
+          this.setError(
+            'No fue posible cargar el valor del inventario.',
           );
-
-          this.errorMessage =
-            'No fue posible cargar el valor del inventario.';
-
-          this.loading = false;
-
-          this.changeDetectorRef.detectChanges();
+          this.finishRequest();
         },
       });
   }
 
   loadBestSellingProductsReport(): void {
-    console.log(
-      '[REPORTS] Solicitando /best-selling-products',
-    );
-
     const params =
       this.createDateParams();
 
@@ -344,31 +252,15 @@ export class Reports implements OnInit {
       )
       .subscribe({
         next: (response) => {
-          console.log(
-            '[REPORTS] /best-selling-products respondió:',
-            response,
-          );
-
           this.bestSellingProductsReport =
             response;
-
-          this.loading = false;
-
-          this.changeDetectorRef.detectChanges();
+          this.finishRequest();
         },
-
-        error: (error) => {
-          console.error(
-            '[REPORTS] Error en /best-selling-products:',
-            error,
+        error: () => {
+          this.setError(
+            'No fue posible cargar los productos más vendidos.',
           );
-
-          this.errorMessage =
-            'No fue posible cargar los productos más vendidos.';
-
-          this.loading = false;
-
-          this.changeDetectorRef.detectChanges();
+          this.finishRequest();
         },
       });
   }
@@ -402,5 +294,23 @@ export class Reports implements OnInit {
     }
 
     return params;
+  }
+
+  private finishRequest(): void {
+    this.pendingRequests--;
+
+    if (this.pendingRequests <= 0) {
+      this.loading = false;
+    }
+
+    this.changeDetectorRef.detectChanges();
+  }
+
+  private setError(
+    message: string,
+  ): void {
+    if (!this.errorMessage) {
+      this.errorMessage = message;
+    }
   }
 }

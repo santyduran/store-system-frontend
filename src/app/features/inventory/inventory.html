@@ -1,0 +1,571 @@
+<div class="inventory">
+
+  <div class="inventory-header">
+
+    <div>
+      <h1>Inventario</h1>
+
+      <p>
+        Controla las entradas, salidas y ajustes de stock
+        de la tienda.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="btn-primary"
+      (click)="openForm()"
+    >
+      Nuevo movimiento
+    </button>
+
+  </div>
+
+
+  @if (showForm()) {
+
+    <div class="inventory-form">
+
+      <h2>
+        {{ movementTitle }}
+      </h2>
+
+      <p class="form-description">
+        {{ movementDescription }}
+      </p>
+
+
+      @if (formError()) {
+
+        <p class="form-error">
+          {{ formError() }}
+        </p>
+
+      }
+
+
+      <form
+        [formGroup]="inventoryForm"
+        (ngSubmit)="saveMovement()"
+      >
+
+        <div class="form-group">
+
+          <label for="productId">
+            Producto
+          </label>
+
+          <select
+            id="productId"
+            formControlName="productId"
+          >
+
+            <option value="">
+              Selecciona un producto
+            </option>
+
+            @for (
+              product of products();
+              track product._id
+            ) {
+
+              <option
+                [value]="product._id"
+              >
+                {{ product.name }}
+                — Stock: {{ product.stock }}
+              </option>
+
+            }
+
+          </select>
+
+        </div>
+
+
+        @if (selectedProduct()) {
+
+          <div class="stock-preview">
+
+            <div>
+
+              <span>
+                Producto seleccionado
+              </span>
+
+              <strong>
+                {{ selectedProduct()?.name }}
+              </strong>
+
+            </div>
+
+            <div>
+
+              <span>
+                Stock actual
+              </span>
+
+              <strong>
+                {{ selectedProduct()?.stock }}
+              </strong>
+
+            </div>
+
+          </div>
+
+        }
+
+
+        <div class="form-group">
+
+          <label for="type">
+            Tipo de movimiento
+          </label>
+
+          <select
+            id="type"
+            formControlName="type"
+            (change)="onTypeChange()"
+          >
+
+            <option value="IN">
+              Entrada
+            </option>
+
+            <option value="OUT">
+              Salida
+            </option>
+
+            <option value="ADJUSTMENT">
+              Ajuste
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="quantity">
+            {{ quantityLabel }}
+          </label>
+
+          <input
+            id="quantity"
+            type="number"
+            min="0.01"
+            step="1"
+            formControlName="quantity"
+            placeholder="Ej: 10"
+          />
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="reason">
+            Motivo
+          </label>
+
+          <textarea
+            id="reason"
+            formControlName="reason"
+            placeholder="Ej: Compra a proveedor"
+          ></textarea>
+
+        </div>
+
+
+        <div class="product-form-actions">
+
+          <button
+            type="button"
+            (click)="closeForm()"
+            [disabled]="saving()"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="btn-primary"
+            [disabled]="saving()"
+          >
+            @if (saving()) {
+              Guardando...
+            } @else {
+              Registrar movimiento
+            }
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  }
+
+
+  @if (loading()) {
+
+    <p>
+      Cargando productos...
+    </p>
+
+  } @else if (error()) {
+
+    <p class="state-error">
+      {{ error() }}
+    </p>
+
+  } @else {
+
+    <div class="inventory-summary">
+
+      <div class="summary-card">
+
+        <span>
+          Productos activos
+        </span>
+
+        <strong>
+          {{ products().length }}
+        </strong>
+
+      </div>
+
+      <div class="summary-card">
+
+        <span>
+          Productos con stock
+        </span>
+
+        <strong>
+          {{
+            products().filter(
+              (product) =>
+                product.stock > 0
+            ).length
+          }}
+        </strong>
+
+      </div>
+
+      <div class="summary-card warning">
+
+        <span>
+          Stock bajo
+        </span>
+
+        <strong>
+          {{
+            products().filter(
+              (product) =>
+                product.stock <=
+                product.minStock
+            ).length
+          }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div class="products-table-container">
+
+      <table class="products-table">
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Producto
+            </th>
+
+            <th>
+              SKU
+            </th>
+
+            <th>
+              Categoría
+            </th>
+
+            <th>
+              Stock actual
+            </th>
+
+            <th>
+              Stock mínimo
+            </th>
+
+            <th>
+              Estado
+            </th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          @for (
+            product of products();
+            track product._id
+          ) {
+
+            <tr>
+
+              <td>
+
+                <strong>
+                  {{ product.name }}
+                </strong>
+
+                @if (product.brand) {
+
+                  <small>
+                    {{ product.brand }}
+                  </small>
+
+                }
+
+              </td>
+
+              <td>
+                {{ product.sku }}
+              </td>
+
+              <td>
+                {{ product.category.name }}
+              </td>
+
+              <td class="stock-cell">
+
+                <strong>
+                  {{ product.stock }}
+                </strong>
+
+              </td>
+
+              <td>
+                {{ product.minStock }}
+              </td>
+
+              <td>
+
+                @if (
+                  product.stock <=
+                  product.minStock
+                ) {
+
+                  <span class="status low">
+                    Stock bajo
+                  </span>
+
+                } @else {
+
+                  <span class="status active">
+                    Stock normal
+                  </span>
+
+                }
+
+              </td>
+
+            </tr>
+
+          } @empty {
+
+            <tr>
+
+              <td
+                colspan="6"
+                class="empty-cell"
+              >
+                No hay productos activos.
+              </td>
+
+            </tr>
+
+          }
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  }
+
+
+  <div class="movements-section">
+
+    <div class="section-header">
+
+      <div>
+
+        <h2>
+          Historial de movimientos
+        </h2>
+
+        <p>
+          Consulta las entradas, salidas y ajustes
+          registrados en el sistema.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    @if (loadingMovements()) {
+
+      <p>
+        Cargando movimientos...
+      </p>
+
+    } @else if (movementsError()) {
+
+      <p class="state-error">
+        {{ movementsError() }}
+      </p>
+
+    } @else {
+
+      <div class="products-table-container">
+
+        <table class="products-table movements-table">
+
+          <thead>
+
+            <tr>
+
+              <th>
+                Fecha
+              </th>
+
+              <th>
+                Producto
+              </th>
+
+              <th>
+                Tipo
+              </th>
+
+              <th>
+                Cantidad
+              </th>
+
+              <th>
+                Stock anterior
+              </th>
+
+              <th>
+                Stock nuevo
+              </th>
+
+              <th>
+                Motivo
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            @for (
+              movement of movements();
+              track movement._id
+            ) {
+
+              <tr>
+
+                <td>
+                  {{ movement.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                </td>
+
+                <td>
+
+                  <strong>
+                    {{ movement.productName }}
+                  </strong>
+
+                  @if (movement.productSku) {
+
+                    <small>
+                      SKU: {{ movement.productSku }}
+                    </small>
+
+                  }
+
+                </td>
+
+                <td>
+
+                  <span
+                    class="movement-badge"
+                    [class.in]="
+                      movement.type === 'IN'
+                    "
+                    [class.out]="
+                      movement.type === 'OUT'
+                    "
+                    [class.adjustment]="
+                      movement.type === 'ADJUSTMENT'
+                    "
+                  >
+                    {{ getMovementLabel(movement.type) }}
+                  </span>
+
+                </td>
+
+                <td>
+                  {{ movement.quantity }}
+                </td>
+
+                <td>
+                  {{ movement.previousStock }}
+                </td>
+
+                <td class="new-stock-cell">
+                  {{ movement.newStock }}
+                </td>
+
+                <td>
+                  {{ movement.reason || 'Sin motivo' }}
+                </td>
+
+              </tr>
+
+            } @empty {
+
+              <tr>
+
+                <td
+                  colspan="7"
+                  class="empty-cell"
+                >
+                  No hay movimientos registrados.
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    }
+
+  </div>
+
+</div>

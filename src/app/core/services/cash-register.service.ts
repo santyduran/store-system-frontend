@@ -1,21 +1,17 @@
 import { Injectable } from '@angular/core';
-
 import { HttpClient } from '@angular/common/http';
-
 import { Observable } from 'rxjs';
 
-export type CashRegisterStatus =
-  | 'OPEN'
-  | 'CLOSED';
+export type CashRegisterStatus = 'OPEN' | 'CLOSED';
 
 export type CashMovementType =
   | 'OPENING'
   | 'SALE'
-  | 'SALE_CANCELLATION';
+  | 'SALE_CANCELLATION'
+  | 'CASH_ENTRY'
+  | 'CASH_EXIT';
 
-export type CashMovementDirection =
-  | 'IN'
-  | 'OUT';
+export type CashMovementDirection = 'IN' | 'OUT';
 
 export interface CashRegister {
   _id: string;
@@ -39,10 +35,27 @@ export interface CloseCashRegister {
   countedCash: number;
 }
 
+export interface CreateCashEntry {
+  amount: number;
+  description: string;
+}
+
+export interface CreateCashExit {
+  amount: number;
+  description: string;
+}
+
+export interface CashMovementUser {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
 export interface CashMovement {
   _id: string;
   cashRegisterId: string;
-  userId: string;
+  userId: string | CashMovementUser;
   type: CashMovementType;
   movementType: CashMovementDirection;
   amount: number;
@@ -56,8 +69,7 @@ export interface CashMovement {
   providedIn: 'root',
 })
 export class CashRegisterService {
-  private readonly apiUrl =
-    'http://localhost:3000';
+  private readonly apiUrl = 'http://localhost:3000';
 
   constructor(
     private readonly http: HttpClient,
@@ -87,6 +99,24 @@ export class CashRegisterService {
   getMovements(): Observable<CashMovement[]> {
     return this.http.get<CashMovement[]>(
       `${this.apiUrl}/cash-register/movements`,
+    );
+  }
+
+  createCashEntry(
+    cashEntry: CreateCashEntry,
+  ): Observable<CashRegister> {
+    return this.http.post<CashRegister>(
+      `${this.apiUrl}/cash-register/entry`,
+      cashEntry,
+    );
+  }
+
+  createCashExit(
+    cashExit: CreateCashExit,
+  ): Observable<CashRegister> {
+    return this.http.post<CashRegister>(
+      `${this.apiUrl}/cash-register/exit`,
+      cashExit,
     );
   }
 

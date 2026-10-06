@@ -58,6 +58,30 @@ export class CashRegisterComponent
 
   closeCashError = signal('');
 
+  cashEntryAmount =
+    signal<number | null>(null);
+
+  cashEntryDescription =
+    signal('');
+
+  cashEntryLoading = signal(false);
+
+  cashEntryError = signal('');
+
+  cashEntrySuccess = signal('');
+
+  cashExitAmount =
+    signal<number | null>(null);
+
+  cashExitDescription =
+    signal('');
+
+  cashExitLoading = signal(false);
+
+  cashExitError = signal('');
+
+  cashExitSuccess = signal('');
+
   ngOnInit(): void {
     this.loadCurrentCashRegister();
   }
@@ -100,7 +124,7 @@ export class CashRegisterComponent
 
           if (error?.status === 401) {
             this.error.set(
-              'Tu sesiÃ³n ha expirado. Inicia sesiÃ³n nuevamente.',
+              'Tu sesión ha expirado. Inicia sesión nuevamente.',
             );
 
             return;
@@ -144,15 +168,65 @@ export class CashRegisterComponent
 
           if (error?.status === 401) {
             this.error.set(
-              'Tu sesiÃ³n ha expirado. Inicia sesiÃ³n nuevamente.',
+              'Tu sesión ha expirado. Inicia sesión nuevamente.',
             );
 
             return;
           }
 
           this.error.set(
-            'No fue posible consultar la Ãºltima caja.',
+            'No fue posible consultar la última caja.',
           );
+        },
+      });
+  }
+
+  private syncCashRegisterState(): void {
+    this.cashRegisterService
+      .getCurrent()
+      .subscribe({
+        next: (cashRegister) => {
+          this.cashRegister.set(
+            cashRegister,
+          );
+
+          this.error.set('');
+
+          this.loadMovements();
+        },
+
+        error: (error) => {
+          if (error?.status === 400) {
+            this.cashRegisterService
+              .getLatest()
+              .subscribe({
+                next: (cashRegister) => {
+                  this.cashRegister.set(
+                    cashRegister,
+                  );
+
+                  this.loadMovements();
+                },
+
+                error: (latestError) => {
+                  if (
+                    latestError?.status === 401
+                  ) {
+                    this.error.set(
+                      'Tu sesión ha expirado. Inicia sesión nuevamente.',
+                    );
+                  }
+                },
+              });
+
+            return;
+          }
+
+          if (error?.status === 401) {
+            this.error.set(
+              'Tu sesión ha expirado. Inicia sesión nuevamente.',
+            );
+          }
         },
       });
   }
@@ -180,7 +254,7 @@ export class CashRegisterComponent
 
           if (error?.status === 401) {
             this.movementsError.set(
-              'Tu sesiÃ³n ha expirado. Inicia sesiÃ³n nuevamente.',
+              'Tu sesión ha expirado. Inicia sesión nuevamente.',
             );
 
             return;
@@ -250,7 +324,7 @@ export class CashRegisterComponent
 
           this.error.set('');
 
-          this.loadMovements();
+          this.syncCashRegisterState();
         },
 
         error: (error) => {
@@ -262,12 +336,14 @@ export class CashRegisterComponent
                 'No fue posible abrir la caja.',
             );
 
+            this.syncCashRegisterState();
+
             return;
           }
 
           if (error?.status === 401) {
             this.openCashError.set(
-              'Tu sesiÃ³n ha expirado. Inicia sesiÃ³n nuevamente.',
+              'Tu sesión ha expirado. Inicia sesión nuevamente.',
             );
 
             return;
@@ -337,7 +413,7 @@ export class CashRegisterComponent
 
           this.error.set('');
 
-          this.loadMovements();
+          this.syncCashRegisterState();
         },
 
         error: (error) => {
@@ -349,12 +425,14 @@ export class CashRegisterComponent
                 'No fue posible cerrar la caja.',
             );
 
+            this.syncCashRegisterState();
+
             return;
           }
 
           if (error?.status === 401) {
             this.closeCashError.set(
-              'Tu sesiÃ³n ha expirado. Inicia sesiÃ³n nuevamente.',
+              'Tu sesión ha expirado. Inicia sesión nuevamente.',
             );
 
             return;
@@ -362,6 +440,259 @@ export class CashRegisterComponent
 
           this.closeCashError.set(
             'No fue posible cerrar la caja. Intenta nuevamente.',
+          );
+        },
+      });
+  }
+
+  updateCashEntryAmount(
+    value: number | null,
+  ): void {
+    this.cashEntryAmount.set(value);
+
+    this.cashEntryError.set('');
+
+    this.cashEntrySuccess.set('');
+  }
+
+  updateCashEntryDescription(
+    value: string,
+  ): void {
+    this.cashEntryDescription.set(value);
+
+    this.cashEntryError.set('');
+
+    this.cashEntrySuccess.set('');
+  }
+
+  createCashEntry(): void {
+    this.cashEntryError.set('');
+
+    this.cashEntrySuccess.set('');
+
+    const amount =
+      this.cashEntryAmount();
+
+    const description =
+      this.cashEntryDescription().trim();
+
+    if (
+      amount === null ||
+      Number.isNaN(amount)
+    ) {
+      this.cashEntryError.set(
+        'Ingresa el monto de la entrada de caja.',
+      );
+
+      return;
+    }
+
+    if (amount <= 0) {
+      this.cashEntryError.set(
+        'El monto de la entrada debe ser mayor que cero.',
+      );
+
+      return;
+    }
+
+    if (!description) {
+      this.cashEntryError.set(
+        'Ingresa el motivo de la entrada de caja.',
+      );
+
+      return;
+    }
+
+    if (this.cashEntryLoading()) {
+      return;
+    }
+
+    this.cashEntryLoading.set(true);
+
+    this.cashRegisterService
+      .createCashEntry({
+        amount,
+        description,
+      })
+      .subscribe({
+        next: (cashRegister) => {
+          this.cashRegister.set(
+            cashRegister,
+          );
+
+          this.cashEntryAmount.set(null);
+
+          this.cashEntryDescription.set('');
+
+          this.cashEntryLoading.set(false);
+
+          this.cashEntryError.set('');
+
+          this.cashEntrySuccess.set(
+            'Entrada de caja registrada correctamente.',
+          );
+
+          this.error.set('');
+
+          this.syncCashRegisterState();
+        },
+
+        error: (error) => {
+          this.cashEntryLoading.set(false);
+
+          if (error?.status === 400) {
+            this.cashEntryError.set(
+              error?.error?.message ??
+                'No fue posible registrar la entrada de caja.',
+            );
+
+            this.syncCashRegisterState();
+
+            return;
+          }
+
+          if (error?.status === 401) {
+            this.cashEntryError.set(
+              'Tu sesión ha expirado. Inicia sesión nuevamente.',
+            );
+
+            return;
+          }
+
+          this.cashEntryError.set(
+            'No fue posible registrar la entrada de caja. Intenta nuevamente.',
+          );
+        },
+      });
+  }
+
+  updateCashExitAmount(
+    value: number | null,
+  ): void {
+    this.cashExitAmount.set(value);
+
+    this.cashExitError.set('');
+
+    this.cashExitSuccess.set('');
+  }
+
+  updateCashExitDescription(
+    value: string,
+  ): void {
+    this.cashExitDescription.set(value);
+
+    this.cashExitError.set('');
+
+    this.cashExitSuccess.set('');
+  }
+
+  createCashExit(): void {
+    this.cashExitError.set('');
+
+    this.cashExitSuccess.set('');
+
+    const amount =
+      this.cashExitAmount();
+
+    const description =
+      this.cashExitDescription().trim();
+
+    if (
+      amount === null ||
+      Number.isNaN(amount)
+    ) {
+      this.cashExitError.set(
+        'Ingresa el monto de la salida de caja.',
+      );
+
+      return;
+    }
+
+    if (amount <= 0) {
+      this.cashExitError.set(
+        'El monto de la salida debe ser mayor que cero.',
+      );
+
+      return;
+    }
+
+    if (!description) {
+      this.cashExitError.set(
+        'Ingresa el motivo de la salida de caja.',
+      );
+
+      return;
+    }
+
+    const currentCash =
+      this.cashRegister()?.expectedCash ?? 0;
+
+    if (amount > currentCash) {
+      this.cashExitError.set(
+        'La salida no puede superar el efectivo disponible en la caja.',
+      );
+
+      return;
+    }
+
+    if (this.cashExitLoading()) {
+      return;
+    }
+
+    this.cashExitLoading.set(true);
+
+    this.cashRegisterService
+      .createCashExit({
+        amount,
+        description,
+      })
+      .subscribe({
+        next: (cashRegister) => {
+          this.cashRegister.set(
+            cashRegister,
+          );
+
+          this.cashExitAmount.set(null);
+
+          this.cashExitDescription.set('');
+
+          this.cashExitLoading.set(false);
+
+          this.cashExitError.set('');
+
+          this.cashExitSuccess.set(
+            'Salida de caja registrada correctamente.',
+          );
+
+          this.error.set('');
+
+          this.syncCashRegisterState();
+        },
+
+        error: (error) => {
+          this.cashExitLoading.set(false);
+
+          if (error?.status === 400) {
+            this.cashExitError.set(
+              error?.error?.message ??
+                'No fue posible registrar la salida de caja.',
+            );
+
+            this.syncCashRegisterState();
+
+            return;
+          }
+
+          if (error?.status === 401) {
+            this.cashExitError.set(
+              'Tu sesión ha expirado. Inicia sesión nuevamente.',
+            );
+
+            return;
+          }
+
+          this.cashExitError.set(
+            'No fue posible registrar la salida de caja. Intenta nuevamente.',
           );
         },
       });

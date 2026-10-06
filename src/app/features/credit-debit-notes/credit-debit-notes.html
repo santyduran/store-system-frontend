@@ -1,0 +1,1821 @@
+<div class="credit-debit-notes">
+
+  <div class="notes-header">
+
+    <div>
+      <h1>Notas crédito y débito</h1>
+
+      <p>
+        Gestiona las notas asociadas a las facturas generadas en el sistema.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="btn-create-note"
+      (click)="openCreateNote()"
+    >
+      Nueva {{ selectedType() === 'CREDIT' ? 'nota crédito' : 'nota débito' }}
+    </button>
+
+  </div>
+
+
+  <div class="notes-card">
+
+    <div class="notes-tabs">
+
+      <button
+        type="button"
+        class="notes-tab"
+        [class.active]="selectedType() === 'CREDIT'"
+        (click)="setType('CREDIT')"
+      >
+        Notas crédito
+      </button>
+
+
+      <button
+        type="button"
+        class="notes-tab"
+        [class.active]="selectedType() === 'DEBIT'"
+        (click)="setType('DEBIT')"
+      >
+        Notas débito
+      </button>
+
+    </div>
+
+
+    <div class="table-header">
+
+      <div>
+
+        <h2>
+          {{ selectedType() === 'CREDIT'
+            ? 'Listado de notas crédito'
+            : 'Listado de notas débito' }}
+        </h2>
+
+
+        <p>
+          {{ selectedType() === 'CREDIT'
+            ? 'Notas crédito generadas a partir de facturas.'
+            : 'Notas débito generadas a partir de facturas.' }}
+        </p>
+
+      </div>
+
+
+      <span class="note-count">
+        {{ currentNoteCount }}
+
+        {{ currentNoteCount === 1
+          ? currentNoteLabel
+          : currentNoteLabelPlural }}
+      </span>
+
+    </div>
+
+
+    @if (loading()) {
+
+      <div class="loading-message">
+        Cargando {{ currentNoteLabelPlural }}...
+      </div>
+
+    }
+
+
+    @if (error()) {
+
+      <div class="error-message">
+        {{ error() }}
+      </div>
+
+    }
+
+
+    @if (
+      !loading() &&
+      !error() &&
+      currentNoteCount === 0
+    ) {
+
+      <div class="empty-message">
+        No hay {{ currentNoteLabelPlural }} registradas.
+      </div>
+
+    }
+
+
+    @if (
+      !loading() &&
+      !error() &&
+      currentNoteCount > 0 &&
+      selectedType() === 'CREDIT'
+    ) {
+
+      <div class="notes-table">
+
+        <table>
+
+          <thead>
+
+            <tr>
+              <th>Nota</th>
+              <th>Fecha</th>
+              <th>Factura</th>
+              <th>Motivo</th>
+              <th>Total</th>
+              <th>Estado</th>
+              <th class="actions-column">Acciones</th>
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            @for (note of creditNotes(); track note._id) {
+
+              <tr>
+
+                <td>
+
+                  <div class="note-number">
+                    {{ note.creditNoteNumber }}
+                  </div>
+
+                </td>
+
+
+                <td>
+                  {{ note.issueDate | date:'dd/MM/yyyy HH:mm' }}
+                </td>
+
+
+                <td>
+
+                  @if (
+                    note.invoiceId &&
+                    typeof note.invoiceId !== 'string'
+                  ) {
+
+                    <div class="invoice-number">
+                      {{ note.invoiceId.invoiceNumber }}
+                    </div>
+
+                  } @else {
+
+                    <span class="no-invoice">
+                      Sin factura
+                    </span>
+
+                  }
+
+                </td>
+
+
+                <td>
+
+                  <div class="note-reason">
+                    {{ note.reason }}
+                  </div>
+
+                </td>
+
+
+                <td>
+
+                  <strong>
+                    {{ note.total | currency:'COP':'symbol':'1.2-2' }}
+                  </strong>
+
+                </td>
+
+
+                <td>
+
+                  <span
+                    class="status"
+                    [class.generated]="note.status === 'GENERATED'"
+                    [class.cancelled]="note.status === 'CANCELLED'"
+                    [class.draft]="note.status === 'DRAFT'"
+                  >
+                    {{
+                      note.status === 'DRAFT'
+                        ? 'Borrador'
+                        : note.status === 'GENERATED'
+                          ? 'Generada'
+                          : 'Cancelada'
+                    }}
+                  </span>
+
+                </td>
+
+
+                <td class="actions">
+
+                  <button
+                    class="btn-action"
+                    type="button"
+                    (click)="viewCreditNote(note._id)"
+                  >
+                    Ver detalle
+                  </button>
+
+
+                  @if (note.status === 'GENERATED') {
+
+                    <button
+                      class="btn-action btn-cancel-note"
+                      type="button"
+                      (click)="
+                        openCancelNote(
+                          'CREDIT',
+                          note._id,
+                          note.creditNoteNumber
+                        )
+                      "
+                    >
+                      Cancelar
+                    </button>
+
+                  }
+
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    }
+
+
+    @if (
+      !loading() &&
+      !error() &&
+      currentNoteCount > 0 &&
+      selectedType() === 'DEBIT'
+    ) {
+
+      <div class="notes-table">
+
+        <table>
+
+          <thead>
+
+            <tr>
+              <th>Nota</th>
+              <th>Fecha</th>
+              <th>Factura</th>
+              <th>Motivo</th>
+              <th>Total</th>
+              <th>Estado</th>
+              <th class="actions-column">Acciones</th>
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            @for (note of debitNotes(); track note._id) {
+
+              <tr>
+
+                <td>
+
+                  <div class="note-number">
+                    {{ note.debitNoteNumber }}
+                  </div>
+
+                </td>
+
+
+                <td>
+                  {{ note.issueDate | date:'dd/MM/yyyy HH:mm' }}
+                </td>
+
+
+                <td>
+
+                  @if (
+                    note.invoiceId &&
+                    typeof note.invoiceId !== 'string'
+                  ) {
+
+                    <div class="invoice-number">
+                      {{ note.invoiceId.invoiceNumber }}
+                    </div>
+
+                  } @else {
+
+                    <span class="no-invoice">
+                      Sin factura
+                    </span>
+
+                  }
+
+                </td>
+
+
+                <td>
+
+                  <div class="note-reason">
+                    {{ note.reason }}
+                  </div>
+
+                </td>
+
+
+                <td>
+
+                  <strong>
+                    {{ note.total | currency:'COP':'symbol':'1.2-2' }}
+                  </strong>
+
+                </td>
+
+
+                <td>
+
+                  <span
+                    class="status"
+                    [class.generated]="note.status === 'GENERATED'"
+                    [class.cancelled]="note.status === 'CANCELLED'"
+                    [class.draft]="note.status === 'DRAFT'"
+                  >
+                    {{
+                      note.status === 'DRAFT'
+                        ? 'Borrador'
+                        : note.status === 'GENERATED'
+                          ? 'Generada'
+                          : 'Cancelada'
+                    }}
+                  </span>
+
+                </td>
+
+
+                <td class="actions">
+
+                  <button
+                    class="btn-action"
+                    type="button"
+                    (click)="viewDebitNote(note._id)"
+                  >
+                    Ver detalle
+                  </button>
+
+
+                  @if (note.status === 'GENERATED') {
+
+                    <button
+                      class="btn-action btn-cancel-note"
+                      type="button"
+                      (click)="
+                        openCancelNote(
+                          'DEBIT',
+                          note._id,
+                          note.debitNoteNumber
+                        )
+                      "
+                    >
+                      Cancelar
+                    </button>
+
+                  }
+
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    }
+
+  </div>
+
+
+  <!-- MODAL CREAR NOTA -->
+
+  @if (createModalOpen()) {
+
+    <div
+      class="modal-overlay"
+      (click)="closeCreateNote()"
+    >
+
+      <div
+        class="note-modal create-note-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-note-title"
+        (click)="$event.stopPropagation()"
+      >
+
+        <div class="modal-header">
+
+          <div>
+
+            <h2 id="create-note-title">
+
+              Nueva
+
+              {{ selectedType() === 'CREDIT'
+                ? 'nota crédito'
+                : 'nota débito' }}
+
+            </h2>
+
+
+            <p>
+              Crea una nota asociada a una factura existente.
+            </p>
+
+          </div>
+
+
+          <button
+            class="modal-close"
+            type="button"
+            (click)="closeCreateNote()"
+            aria-label="Cerrar"
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <div class="note-detail-content create-note-content">
+
+
+          @if (createInvoicesLoading()) {
+
+            <div class="loading-message">
+              Cargando facturas disponibles...
+            </div>
+
+          }
+
+
+          @if (createError()) {
+
+            <div class="error-message">
+              {{ createError() }}
+            </div>
+
+          }
+
+
+          @if (createSuccess()) {
+
+            <div class="success-message">
+              {{ createSuccess() }}
+            </div>
+
+          }
+
+
+          <div class="note-detail-section">
+
+            <h3>
+              Información de la nota
+            </h3>
+
+
+            <div class="create-note-form">
+
+
+              <div class="form-field form-field-full">
+
+                <label for="create-invoice">
+                  Factura relacionada
+                </label>
+
+
+                <select
+                  id="create-invoice"
+                  [value]="selectedInvoiceId()"
+                  (change)="onInvoiceSelected($any($event.target).value)"
+                  [disabled]="
+                    createInvoicesLoading() ||
+                    createLoading()
+                  "
+                >
+
+                  <option value="">
+                    Selecciona una factura
+                  </option>
+
+
+                  @for (
+                    invoice of createInvoices();
+                    track invoice._id
+                  ) {
+
+                    <option [value]="invoice._id">
+
+                      {{ invoice.invoiceNumber }}
+
+                      —
+
+                      {{ invoice.total | currency:'COP':'symbol':'1.2-2' }}
+
+                    </option>
+
+                  }
+
+                </select>
+
+              </div>
+
+
+              @if (
+                createLoading() &&
+                selectedInvoiceId() &&
+                !createInvoiceDetail()
+              ) {
+
+                <div class="loading-message">
+                  Cargando productos de la factura...
+                </div>
+
+              }
+
+
+              @if (createInvoiceDetail(); as invoice) {
+
+
+                <div class="invoice-summary">
+
+
+                  <div>
+
+                    <span class="detail-label">
+                      Factura
+                    </span>
+
+
+                    <strong>
+                      {{ invoice.invoiceNumber }}
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span class="detail-label">
+                      Fecha
+                    </span>
+
+
+                    <strong>
+                      {{ invoice.issueDate | date:'dd/MM/yyyy HH:mm' }}
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span class="detail-label">
+                      Total factura
+                    </span>
+
+
+                    <strong>
+                      {{ invoice.total | currency:'COP':'symbol':'1.2-2' }}
+                    </strong>
+
+                  </div>
+
+
+                </div>
+
+
+                <div class="form-field">
+
+                  <label for="create-product">
+                    Producto
+                  </label>
+
+
+                  <select
+                    id="create-product"
+                    [value]="selectedProductId()"
+                    (change)="onProductSelected($any($event.target).value)"
+                    [disabled]="createLoading()"
+                  >
+
+                    <option value="">
+                      Selecciona un producto
+                    </option>
+
+
+                    @for (
+                      item of invoice.items;
+                      track item._id
+                    ) {
+
+                      <option [value]="getProductId(item)">
+
+                        {{ item.productName }}
+
+                        —
+
+                        {{ item.total | currency:'COP':'symbol':'1.2-2' }}
+
+                      </option>
+
+                    }
+
+                  </select>
+
+                </div>
+
+
+                <div class="form-field">
+
+                  <label for="create-quantity">
+                    Cantidad
+                  </label>
+
+
+                  <input
+                    id="create-quantity"
+                    type="number"
+                    min="1"
+                    step="1"
+                    [value]="selectedQuantity()"
+                    (input)="
+                      onQuantityChanged(
+                        +$any($event.target).value
+                      )
+                    "
+                    [disabled]="
+                      createLoading() ||
+                      !selectedProductId()
+                    "
+                  />
+
+                </div>
+
+
+                @if (selectedInvoiceItem; as item) {
+
+
+                  <div class="create-item-preview">
+
+
+                    <div>
+
+                      <span>
+                        Producto
+                      </span>
+
+
+                      <strong>
+                        {{ item.productName }}
+                      </strong>
+
+                    </div>
+
+
+                    <div>
+
+                      <span>
+                        Precio unitario
+                      </span>
+
+
+                      <strong>
+                        {{ item.unitPrice | currency:'COP':'symbol':'1.2-2' }}
+                      </strong>
+
+                    </div>
+
+
+                    <div>
+
+                      <span>
+                        IVA incluido
+                      </span>
+
+
+                      <strong>
+                        {{ item.taxAmount | currency:'COP':'symbol':'1.2-2' }}
+                      </strong>
+
+                    </div>
+
+
+                    <div>
+
+                      <span>
+                        Total de la nota
+                      </span>
+
+
+                      <strong>
+
+                        {{
+                          item.unitPrice * selectedQuantity()
+                            | currency:'COP':'symbol':'1.2-2'
+                        }}
+
+                      </strong>
+
+                    </div>
+
+
+                  </div>
+
+
+                }
+
+
+                <div class="form-field form-field-full">
+
+
+                  <label for="create-reason">
+                    Motivo
+                  </label>
+
+
+                  <textarea
+                    id="create-reason"
+                    rows="4"
+                    maxlength="500"
+                    [value]="createReason()"
+                    (input)="
+                      onReasonChanged(
+                        $any($event.target).value
+                      )
+                    "
+                    placeholder="Describe el motivo de la nota..."
+                    [disabled]="createLoading()"
+                  ></textarea>
+
+
+                  <small>
+                    {{ createReason().length }} / 500
+                  </small>
+
+
+                </div>
+
+
+              }
+
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="modal-actions">
+
+
+          <button
+            type="button"
+            class="btn-secondary"
+            (click)="closeCreateNote()"
+            [disabled]="createLoading()"
+          >
+            Cancelar
+          </button>
+
+
+          <button
+            type="button"
+            class="btn-primary"
+            (click)="createNote()"
+            [disabled]="
+              createLoading() ||
+              !createInvoiceDetail()
+            "
+          >
+
+            {{
+              createLoading()
+                ? 'Creando...'
+                : 'Crear nota'
+            }}
+
+          </button>
+
+
+        </div>
+
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- MODAL CARGANDO DETALLE -->
+
+  @if (detailLoading()) {
+
+    <div class="modal-overlay">
+
+
+      <div
+        class="note-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="note-loading-title"
+      >
+
+
+        <div class="modal-header">
+
+
+          <div>
+
+            <h2 id="note-loading-title">
+              Detalle de nota
+            </h2>
+
+
+            <p>
+              Cargando información...
+            </p>
+
+          </div>
+
+
+          <button
+            class="modal-close"
+            type="button"
+            (click)="closeDetail()"
+            aria-label="Cerrar"
+          >
+            ×
+          </button>
+
+
+        </div>
+
+
+        <div class="loading-message">
+          Cargando detalle de la nota...
+        </div>
+
+
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- MODAL ERROR DETALLE -->
+
+  @if (detailError()) {
+
+    <div class="modal-overlay">
+
+
+      <div
+        class="note-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="note-error-title"
+      >
+
+
+        <div class="modal-header">
+
+
+          <div>
+
+            <h2 id="note-error-title">
+              Detalle de nota
+            </h2>
+
+          </div>
+
+
+          <button
+            class="modal-close"
+            type="button"
+            (click)="closeDetail()"
+            aria-label="Cerrar"
+          >
+            ×
+          </button>
+
+
+        </div>
+
+
+        <div class="error-message">
+          {{ detailError() }}
+        </div>
+
+
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- DETALLE NOTA CRÉDITO -->
+
+  @if (selectedCreditNote(); as note) {
+
+
+    <div
+      class="modal-overlay"
+      (click)="closeDetail()"
+    >
+
+
+      <div
+        class="note-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="credit-note-detail-title"
+        (click)="$event.stopPropagation()"
+      >
+
+
+        <div class="modal-header">
+
+
+          <div>
+
+            <h2 id="credit-note-detail-title">
+              Detalle de nota crédito
+            </h2>
+
+
+            <p>
+              {{ note.creditNoteNumber }}
+            </p>
+
+          </div>
+
+
+          <button
+            class="modal-close"
+            type="button"
+            (click)="closeDetail()"
+            aria-label="Cerrar"
+          >
+            ×
+          </button>
+
+
+        </div>
+
+
+        <div class="note-detail-content">
+
+
+          <div class="note-detail-section">
+
+
+            <h3>
+              Información de la nota
+            </h3>
+
+
+            <div class="note-detail-grid">
+
+
+              <div>
+
+                <span class="detail-label">
+                  Número
+                </span>
+
+
+                <strong>
+                  {{ note.creditNoteNumber }}
+                </strong>
+
+              </div>
+
+
+              <div>
+
+                <span class="detail-label">
+                  Fecha
+                </span>
+
+
+                <strong>
+                  {{ note.issueDate | date:'dd/MM/yyyy HH:mm' }}
+                </strong>
+
+              </div>
+
+
+              <div>
+
+                <span class="detail-label">
+                  Estado
+                </span>
+
+
+                <span
+                  class="status"
+                  [class.generated]="note.status === 'GENERATED'"
+                  [class.cancelled]="note.status === 'CANCELLED'"
+                  [class.draft]="note.status === 'DRAFT'"
+                >
+
+                  {{
+                    note.status === 'DRAFT'
+                      ? 'Borrador'
+                      : note.status === 'GENERATED'
+                        ? 'Generada'
+                        : 'Cancelada'
+                  }}
+
+                </span>
+
+              </div>
+
+
+              <div>
+
+                <span class="detail-label">
+                  Factura relacionada
+                </span>
+
+
+                @if (
+                  note.invoiceId &&
+                  typeof note.invoiceId !== 'string'
+                ) {
+
+                  <strong>
+                    {{ note.invoiceId.invoiceNumber }}
+                  </strong>
+
+                } @else {
+
+                  <span class="no-invoice">
+                    Sin factura
+                  </span>
+
+                }
+
+              </div>
+
+
+            </div>
+
+          </div>
+
+
+          <div class="note-detail-section">
+
+
+            <h3>
+              Motivo
+            </h3>
+
+
+            <div class="note-reason-detail">
+              {{ note.reason }}
+            </div>
+
+
+          </div>
+
+
+          @if (note.status === 'CANCELLED') {
+
+            <div class="cancelled-note-info">
+
+              <strong>
+                Nota cancelada
+              </strong>
+
+              @if (note.cancellationReason) {
+
+                <p>
+                  <strong>Motivo:</strong>
+                  {{ note.cancellationReason }}
+                </p>
+
+              }
+
+              @if (note.cancelledAt) {
+
+                <p>
+                  <strong>Fecha de cancelación:</strong>
+                  {{ note.cancelledAt | date:'dd/MM/yyyy HH:mm' }}
+                </p>
+
+              }
+
+            </div>
+
+          }
+
+
+          <div class="note-detail-section">
+
+
+            <h3>
+              Productos
+            </h3>
+
+
+            <div class="note-items-table">
+
+
+              <table>
+
+
+                <thead>
+
+                  <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio unitario sin IVA</th>
+                    <th>IVA</th>
+                    <th>Total</th>
+                  </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                  @for (
+                    item of note.items;
+                    track item._id
+                  ) {
+
+
+                    <tr>
+
+
+                      <td>
+
+                        <strong>
+                          {{ item.productName }}
+                        </strong>
+
+                      </td>
+
+
+                      <td>
+                        {{ item.quantity }}
+                      </td>
+
+
+                      <td>
+
+                        {{
+                          item.unitPrice /
+                            (1 + item.taxRate / 100)
+                            | currency:'COP':'symbol':'1.2-2'
+                        }}
+
+                      </td>
+
+
+                      <td>
+                        {{ item.taxAmount | currency:'COP':'symbol':'1.2-2' }}
+                      </td>
+
+
+                      <td>
+
+                        <strong>
+                          {{ item.total | currency:'COP':'symbol':'1.2-2' }}
+                        </strong>
+
+                      </td>
+
+
+                    </tr>
+
+
+                  }
+
+
+                </tbody>
+
+
+              </table>
+
+
+            </div>
+
+
+          </div>
+
+
+          <div class="note-totals">
+
+
+            <div class="note-total-row">
+
+              <span>Subtotal</span>
+
+
+              <strong>
+                {{ note.subtotal | currency:'COP':'symbol':'1.2-2' }}
+              </strong>
+
+            </div>
+
+
+            <div class="note-total-row">
+
+              <span>IVA</span>
+
+
+              <strong>
+                {{ note.taxTotal | currency:'COP':'symbol':'1.2-2' }}
+              </strong>
+
+            </div>
+
+
+            <div class="note-total-row note-total-final">
+
+              <span>Total</span>
+
+
+              <strong>
+                {{ note.total | currency:'COP':'symbol':'1.2-2' }}
+              </strong>
+
+            </div>
+
+
+          </div>
+
+
+          @if (note.status === 'GENERATED') {
+
+            <div class="note-detail-actions">
+
+              <button
+                type="button"
+                class="btn-action btn-cancel-note"
+                (click)="
+                  openCancelNote(
+                    'CREDIT',
+                    note._id,
+                    note.creditNoteNumber
+                  )
+                "
+              >
+                Cancelar nota crédito
+              </button>
+
+            </div>
+
+          }
+
+
+        </div>
+
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- DETALLE NOTA DÉBITO -->
+
+  @if (selectedDebitNote(); as note) {
+
+
+    <div
+      class="modal-overlay"
+      (click)="closeDetail()"
+    >
+
+
+      <div
+        class="note-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="debit-note-detail-title"
+        (click)="$event.stopPropagation()"
+      >
+
+
+        <div class="modal-header">
+
+
+          <div>
+
+            <h2 id="debit-note-detail-title">
+              Detalle de nota débito
+            </h2>
+
+
+            <p>
+              {{ note.debitNoteNumber }}
+            </p>
+
+          </div>
+
+
+          <button
+            class="modal-close"
+            type="button"
+            (click)="closeDetail()"
+            aria-label="Cerrar"
+          >
+            ×
+          </button>
+
+
+        </div>
+
+
+        <div class="note-detail-content">
+
+
+          <div class="note-detail-section">
+
+
+            <h3>
+              Información de la nota
+            </h3>
+
+
+            <div class="note-detail-grid">
+
+
+              <div>
+
+                <span class="detail-label">
+                  Número
+                </span>
+
+
+                <strong>
+                  {{ note.debitNoteNumber }}
+                </strong>
+
+              </div>
+
+
+              <div>
+
+                <span class="detail-label">
+                  Fecha
+                </span>
+
+
+                <strong>
+                  {{ note.issueDate | date:'dd/MM/yyyy HH:mm' }}
+                </strong>
+
+              </div>
+
+
+              <div>
+
+                <span class="detail-label">
+                  Estado
+                </span>
+
+
+                <span
+                  class="status"
+                  [class.generated]="note.status === 'GENERATED'"
+                  [class.cancelled]="note.status === 'CANCELLED'"
+                  [class.draft]="note.status === 'DRAFT'"
+                >
+
+                  {{
+                    note.status === 'DRAFT'
+                      ? 'Borrador'
+                      : note.status === 'GENERATED'
+                        ? 'Generada'
+                        : 'Cancelada'
+                  }}
+
+                </span>
+
+              </div>
+
+
+              <div>
+
+                <span class="detail-label">
+                  Factura relacionada
+                </span>
+
+
+                @if (
+                  note.invoiceId &&
+                  typeof note.invoiceId !== 'string'
+                ) {
+
+                  <strong>
+                    {{ note.invoiceId.invoiceNumber }}
+                  </strong>
+
+                } @else {
+
+                  <span class="no-invoice">
+                    Sin factura
+                  </span>
+
+                }
+
+              </div>
+
+
+            </div>
+
+          </div>
+
+
+          <div class="note-detail-section">
+
+
+            <h3>
+              Motivo
+            </h3>
+
+
+            <div class="note-reason-detail">
+              {{ note.reason }}
+            </div>
+
+
+          </div>
+
+
+          @if (note.status === 'CANCELLED') {
+
+            <div class="cancelled-note-info">
+
+              <strong>
+                Nota cancelada
+              </strong>
+
+              @if (note.cancellationReason) {
+
+                <p>
+                  <strong>Motivo:</strong>
+                  {{ note.cancellationReason }}
+                </p>
+
+              }
+
+              @if (note.cancelledAt) {
+
+                <p>
+                  <strong>Fecha de cancelación:</strong>
+                  {{ note.cancelledAt | date:'dd/MM/yyyy HH:mm' }}
+                </p>
+
+              }
+
+            </div>
+
+          }
+
+
+          <div class="note-detail-section">
+
+
+            <h3>
+              Productos
+            </h3>
+
+
+            <div class="note-items-table">
+
+
+              <table>
+
+
+                <thead>
+
+                  <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio unitario sin IVA</th>
+                    <th>IVA</th>
+                    <th>Total</th>
+                  </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                  @for (
+                    item of note.items;
+                    track item._id
+                  ) {
+
+
+                    <tr>
+
+
+                      <td>
+
+                        <strong>
+                          {{ item.productName }}
+                        </strong>
+
+                      </td>
+
+
+                      <td>
+                        {{ item.quantity }}
+                      </td>
+
+
+                      <td>
+
+                        {{
+                          item.unitPrice /
+                            (1 + item.taxRate / 100)
+                            | currency:'COP':'symbol':'1.2-2'
+                        }}
+
+                      </td>
+
+
+                      <td>
+                        {{ item.taxAmount | currency:'COP':'symbol':'1.2-2' }}
+                      </td>
+
+
+                      <td>
+
+                        <strong>
+                          {{ item.total | currency:'COP':'symbol':'1.2-2' }}
+                        </strong>
+
+                      </td>
+
+
+                    </tr>
+
+
+                  }
+
+
+                </tbody>
+
+
+              </table>
+
+
+            </div>
+
+
+          </div>
+
+
+          <div class="note-totals">
+
+
+            <div class="note-total-row">
+
+              <span>Subtotal</span>
+
+
+              <strong>
+                {{ note.subtotal | currency:'COP':'symbol':'1.2-2' }}
+              </strong>
+
+            </div>
+
+
+            <div class="note-total-row">
+
+              <span>IVA</span>
+
+
+              <strong>
+                {{ note.taxTotal | currency:'COP':'symbol':'1.2-2' }}
+              </strong>
+
+            </div>
+
+
+            <div class="note-total-row note-total-final">
+
+              <span>Total</span>
+
+
+              <strong>
+                {{ note.total | currency:'COP':'symbol':'1.2-2' }}
+              </strong>
+
+            </div>
+
+
+          </div>
+
+
+          @if (note.status === 'GENERATED') {
+
+            <div class="note-detail-actions">
+
+              <button
+                type="button"
+                class="btn-action btn-cancel-note"
+                (click)="
+                  openCancelNote(
+                    'DEBIT',
+                    note._id,
+                    note.debitNoteNumber
+                  )
+                "
+              >
+                Cancelar nota débito
+              </button>
+
+            </div>
+
+          }
+
+
+        </div>
+
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- MODAL CANCELAR NOTA -->
+
+  @if (cancelModalOpen()) {
+
+    <div
+      class="modal-overlay"
+      (click)="closeCancelNote()"
+    >
+
+      <div
+        class="note-modal cancel-note-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cancel-note-title"
+        (click)="$event.stopPropagation()"
+      >
+
+        <div class="modal-header">
+
+          <div>
+
+            <h2 id="cancel-note-title">
+              Cancelar nota
+            </h2>
+
+            <p>
+              {{ cancelNoteNumber() }}
+            </p>
+
+          </div>
+
+
+          <button
+            class="modal-close"
+            type="button"
+            (click)="closeCancelNote()"
+            aria-label="Cerrar"
+            [disabled]="cancelLoading()"
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <div class="note-detail-content">
+
+          <div class="cancel-note-warning">
+
+            <strong>
+              Esta acción no se puede deshacer.
+            </strong>
+
+            <p>
+              La nota quedará registrada como cancelada y se conservará
+              su información histórica.
+            </p>
+
+          </div>
+
+
+          @if (cancelError()) {
+
+            <div class="error-message">
+              {{ cancelError() }}
+            </div>
+
+          }
+
+
+          <div class="cancel-note-form">
+
+            <label for="cancel-note-reason">
+
+              Motivo de cancelación
+
+              <span>
+                {{ cancelReason().length }} / 500
+              </span>
+
+            </label>
+
+
+            <textarea
+              id="cancel-note-reason"
+              rows="5"
+              maxlength="500"
+              [value]="cancelReason()"
+              (input)="
+                onCancelReasonChanged(
+                  $any($event.target).value
+                )
+              "
+              placeholder="Describe el motivo de la cancelación..."
+              [disabled]="cancelLoading()"
+            ></textarea>
+
+          </div>
+
+        </div>
+
+
+        <div class="modal-actions">
+
+          <button
+            type="button"
+            class="btn-secondary"
+            (click)="closeCancelNote()"
+            [disabled]="cancelLoading()"
+          >
+            Volver
+          </button>
+
+
+          <button
+            type="button"
+            class="btn-primary"
+            (click)="cancelNote()"
+            [disabled]="
+              cancelLoading() ||
+              !cancelReason().trim()
+            "
+          >
+
+            {{
+              cancelLoading()
+                ? 'Cancelando...'
+                : 'Confirmar cancelación'
+            }}
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  }
+
+</div>

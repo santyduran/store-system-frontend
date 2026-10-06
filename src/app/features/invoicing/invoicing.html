@@ -1,0 +1,770 @@
+<div class="invoicing">
+
+  <div class="invoicing-header">
+
+    <div>
+      <h1>
+        Facturación
+      </h1>
+
+      <p>
+        Gestiona las facturas generadas en el sistema.
+      </p>
+    </div>
+
+  </div>
+
+  <div class="invoicing-card">
+
+    <div class="table-header">
+
+      <div>
+        <h2>
+          Listado de facturas
+        </h2>
+
+        <p>
+          Facturas generadas a partir de las ventas registradas.
+        </p>
+      </div>
+
+      <span class="invoice-count">
+        {{ invoices().length }}
+        {{ invoices().length === 1 ? 'factura' : 'facturas' }}
+      </span>
+
+    </div>
+
+    @if (loading()) {
+
+      <div class="loading-message">
+        Cargando facturas...
+      </div>
+
+    }
+
+    @if (error()) {
+
+      <div class="error-message">
+        {{ error() }}
+      </div>
+
+    }
+
+    @if (
+      !loading() &&
+      !error() &&
+      invoices().length === 0
+    ) {
+
+      <div class="empty-message">
+        No hay facturas registradas.
+      </div>
+
+    }
+
+    @if (
+      !loading() &&
+      invoices().length > 0
+    ) {
+
+      <div class="invoicing-table">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>Factura</th>
+
+              <th>Fecha</th>
+
+              <th>Cliente</th>
+
+              <th>Total</th>
+
+              <th>Método de pago</th>
+
+              <th>Estado</th>
+
+              <th class="actions-column">
+                Acciones
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            @for (
+              invoice of invoices();
+              track invoice._id
+            ) {
+
+              <tr>
+
+                <td>
+
+                  <div class="invoice-number">
+                    {{ invoice.invoiceNumber }}
+                  </div>
+
+                </td>
+
+                <td>
+
+                  {{
+                    invoice.issueDate
+                      | date:'dd/MM/yyyy HH:mm'
+                  }}
+
+                </td>
+
+                <td>
+
+                  @if (
+                    invoice.customerId &&
+                    typeof invoice.customerId !== 'string'
+                  ) {
+
+                    <div class="customer-name">
+
+                      {{ invoice.customerId.firstName }}
+                      {{ invoice.customerId.lastName ?? '' }}
+
+                    </div>
+
+                    <div class="customer-document">
+
+                      {{ invoice.customerId.documentType }}
+                      {{ invoice.customerId.documentNumber }}
+
+                    </div>
+
+                  } @else {
+
+                    <span class="no-customer">
+                      Sin cliente
+                    </span>
+
+                  }
+
+                </td>
+
+                <td>
+
+                  <strong>
+
+                    {{
+                      invoice.total
+                        | currency:'COP':'symbol':'1.0-0'
+                    }}
+
+                  </strong>
+
+                </td>
+
+                <td>
+
+                  {{
+                    invoice.paymentMethod === 'CASH'
+                      ? 'Efectivo'
+                      : invoice.paymentMethod === 'CARD'
+                        ? 'Tarjeta'
+                        : 'Transferencia'
+                  }}
+
+                </td>
+
+                <td>
+
+                  <span
+                    class="status"
+
+                    [class.generated]="
+                      invoice.status === 'GENERATED'
+                    "
+
+                    [class.sent]="
+                      invoice.status === 'SENT'
+                    "
+
+                    [class.validated]="
+                      invoice.status === 'VALIDATED'
+                    "
+
+                    [class.rejected]="
+                      invoice.status === 'REJECTED'
+                    "
+
+                    [class.cancelled]="
+                      invoice.status === 'CANCELLED'
+                    "
+
+                    [class.draft]="
+                      invoice.status === 'DRAFT'
+                    "
+                  >
+
+                    {{
+                      invoice.status === 'DRAFT'
+                        ? 'Borrador'
+                        : invoice.status === 'GENERATED'
+                          ? 'Generada'
+                          : invoice.status === 'SENT'
+                            ? 'Enviada'
+                            : invoice.status === 'VALIDATED'
+                              ? 'Validada'
+                              : invoice.status === 'REJECTED'
+                                ? 'Rechazada'
+                                : 'Cancelada'
+                    }}
+
+                  </span>
+
+                </td>
+
+                <td class="actions">
+
+                  <button
+                    class="btn-action"
+                    type="button"
+                    (click)="viewInvoice(invoice._id)"
+                  >
+                    Ver detalle
+                  </button>
+
+                  <button
+                    class="btn-action"
+                    type="button"
+                    (click)="viewPdf(invoice._id)"
+                    [disabled]="pdfLoading()"
+                  >
+
+                    {{
+                      pdfLoading()
+                        ? 'Generando...'
+                        : 'Ver factura'
+                    }}
+
+                  </button>
+
+                  <button
+                    class="btn-action"
+                    type="button"
+                    (click)="printInvoice(invoice._id)"
+                  >
+                    Imprimir
+                  </button>
+
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    }
+
+  </div>
+
+  @if (pdfError()) {
+
+    <div class="error-message">
+      {{ pdfError() }}
+    </div>
+
+  }
+
+  @if (detailLoading()) {
+
+    <div class="modal-overlay">
+
+      <div
+        class="invoice-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="invoice-modal-title"
+      >
+
+        <div class="modal-header">
+
+          <div>
+
+            <h2 id="invoice-modal-title">
+              Detalle de factura
+            </h2>
+
+            <p>
+              Cargando información...
+            </p>
+
+          </div>
+
+          <button
+            class="modal-close"
+            type="button"
+            (click)="closeDetail()"
+            aria-label="Cerrar"
+          >
+            ×
+          </button>
+
+        </div>
+
+        <div class="loading-message">
+          Cargando detalle de la factura...
+        </div>
+
+      </div>
+
+    </div>
+
+  }
+
+  @if (detailError()) {
+
+    <div class="modal-overlay">
+
+      <div
+        class="invoice-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="invoice-error-title"
+      >
+
+        <div class="modal-header">
+
+          <div>
+
+            <h2 id="invoice-error-title">
+              Detalle de factura
+            </h2>
+
+          </div>
+
+          <button
+            class="modal-close"
+            type="button"
+            (click)="closeDetail()"
+            aria-label="Cerrar"
+          >
+            ×
+          </button>
+
+        </div>
+
+        <div class="error-message">
+          {{ detailError() }}
+        </div>
+
+      </div>
+
+    </div>
+
+  }
+
+  @if (selectedInvoice(); as invoice) {
+
+    <div
+      class="modal-overlay"
+      (click)="closeDetail()"
+    >
+
+      <div
+        class="invoice-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="invoice-detail-title"
+        (click)="$event.stopPropagation()"
+      >
+
+        <div class="modal-header">
+
+          <div>
+
+            <h2 id="invoice-detail-title">
+              Detalle de factura
+            </h2>
+
+            <p>
+              {{ invoice.invoiceNumber }}
+            </p>
+
+          </div>
+
+          <button
+            class="modal-close"
+            type="button"
+            (click)="closeDetail()"
+            aria-label="Cerrar"
+          >
+            ×
+          </button>
+
+        </div>
+
+        <div class="invoice-detail-content">
+
+          <div class="invoice-detail-section">
+
+            <h3>
+              Información de la factura
+            </h3>
+
+            <div class="invoice-detail-grid">
+
+              <div>
+
+                <span class="detail-label">
+                  Número
+                </span>
+
+                <strong>
+                  {{ invoice.invoiceNumber }}
+                </strong>
+
+              </div>
+
+              <div>
+
+                <span class="detail-label">
+                  Fecha
+                </span>
+
+                <strong>
+                  {{
+                    invoice.issueDate
+                      | date:'dd/MM/yyyy HH:mm'
+                  }}
+                </strong>
+
+              </div>
+
+              <div>
+
+                <span class="detail-label">
+                  Estado
+                </span>
+
+                <span
+                  class="status"
+
+                  [class.generated]="
+                    invoice.status === 'GENERATED'
+                  "
+
+                  [class.sent]="
+                    invoice.status === 'SENT'
+                  "
+
+                  [class.validated]="
+                    invoice.status === 'VALIDATED'
+                  "
+
+                  [class.rejected]="
+                    invoice.status === 'REJECTED'
+                  "
+
+                  [class.cancelled]="
+                    invoice.status === 'CANCELLED'
+                  "
+
+                  [class.draft]="
+                    invoice.status === 'DRAFT'
+                  "
+                >
+
+                  {{
+                    invoice.status === 'DRAFT'
+                      ? 'Borrador'
+                      : invoice.status === 'GENERATED'
+                        ? 'Generada'
+                        : invoice.status === 'SENT'
+                          ? 'Enviada'
+                          : invoice.status === 'VALIDATED'
+                            ? 'Validada'
+                            : invoice.status === 'REJECTED'
+                              ? 'Rechazada'
+                              : 'Cancelada'
+                  }}
+
+                </span>
+
+              </div>
+
+              <div>
+
+                <span class="detail-label">
+                  Método de pago
+                </span>
+
+                <strong>
+
+                  {{
+                    invoice.paymentMethod === 'CASH'
+                      ? 'Efectivo'
+                      : invoice.paymentMethod === 'CARD'
+                        ? 'Tarjeta'
+                        : 'Transferencia'
+                  }}
+
+                </strong>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="invoice-detail-section">
+
+            <h3>
+              Cliente
+            </h3>
+
+            @if (
+              invoice.customerId &&
+              typeof invoice.customerId !== 'string'
+            ) {
+
+              <div class="invoice-customer">
+
+                <strong>
+
+                  {{ invoice.customerId.firstName }}
+                  {{ invoice.customerId.lastName ?? '' }}
+
+                </strong>
+
+                <span>
+
+                  {{ invoice.customerId.documentType }}
+                  {{ invoice.customerId.documentNumber }}
+
+                </span>
+
+                @if (invoice.customerId.email) {
+
+                  <span>
+                    {{ invoice.customerId.email }}
+                  </span>
+
+                }
+
+                @if (invoice.customerId.phone) {
+
+                  <span>
+                    {{ invoice.customerId.phone }}
+                  </span>
+
+                }
+
+                @if (invoice.customerId.address) {
+
+                  <span>
+                    {{ invoice.customerId.address }}
+                  </span>
+
+                }
+
+                @if (invoice.customerId.city) {
+
+                  <span>
+                    {{ invoice.customerId.city }}
+                  </span>
+
+                }
+
+              </div>
+
+            } @else {
+
+              <span class="no-customer">
+                Sin cliente asociado
+              </span>
+
+            }
+
+          </div>
+
+          <div class="invoice-detail-section">
+
+            <h3>
+              Productos
+            </h3>
+
+            <div class="invoice-items-table">
+
+              <table>
+
+                <thead>
+
+                  <tr>
+
+                    <th>Producto</th>
+
+                    <th>Cantidad</th>
+
+                    <th>Precio unitario sin IVA</th>
+
+                    <th>IVA</th>
+
+                    <th>Total</th>
+
+                  </tr>
+
+                </thead>
+
+                <tbody>
+
+                  @for (
+                    item of invoice.items;
+                    track item._id
+                  ) {
+
+                    <tr>
+
+                      <td>
+
+                        <strong>
+                          {{ item.productName }}
+                        </strong>
+
+                      </td>
+
+                      <td>
+                        {{ item.quantity }}
+                      </td>
+
+                      <td>
+
+                        {{
+                          (item.unitPrice / (1 + item.taxRate / 100))
+                            | currency:'COP':'symbol':'1.2-2'
+                        }}
+
+                      </td>
+
+                      <td>
+
+                        {{
+                          item.taxAmount
+                            | currency:'COP':'symbol':'1.2-2'
+                        }}
+
+                      </td>
+
+                      <td>
+
+                        <strong>
+
+                          {{
+                            item.total
+                              | currency:'COP':'symbol':'1.0-0'
+                          }}
+
+                        </strong>
+
+                      </td>
+
+                    </tr>
+
+                  }
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          </div>
+
+          <div class="invoice-totals">
+
+            <div class="invoice-total-row">
+
+              <span>
+                Subtotal
+              </span>
+
+              <strong>
+
+                {{
+                  invoice.subtotal
+                    | currency:'COP':'symbol':'1.2-2'
+                }}
+
+              </strong>
+
+            </div>
+
+            <div class="invoice-total-row">
+
+              <span>
+                Descuento
+              </span>
+
+              <strong>
+
+                {{
+                  invoice.discount
+                    | currency:'COP':'symbol':'1.2-2'
+                }}
+
+              </strong>
+
+            </div>
+
+            <div class="invoice-total-row">
+
+              <span>
+                IVA
+              </span>
+
+              <strong>
+
+                {{
+                  invoice.taxTotal
+                    | currency:'COP':'symbol':'1.2-2'
+                }}
+
+              </strong>
+
+            </div>
+
+            <div class="invoice-total-row invoice-total-final">
+
+              <span>
+                Total
+              </span>
+
+              <strong>
+
+                {{
+                  invoice.total
+                    | currency:'COP':'symbol':'1.2-2'
+                }}
+
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  }
+
+</div>

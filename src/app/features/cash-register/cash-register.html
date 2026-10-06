@@ -451,8 +451,14 @@
                       Apertura
                     } @else if (movement.type === 'SALE') {
                       Venta
+                    } @else if (movement.type === 'SALE_CANCELLATION') {
+                      Cancelación de venta
+                    } @else if (movement.type === 'CASH_ENTRY') {
+                      Entrada de efectivo
+                    } @else if (movement.type === 'CASH_EXIT') {
+                      Salida de efectivo
                     } @else {
-                      Cancelación
+                      {{ movement.type }}
                     }
                   </td>
 
