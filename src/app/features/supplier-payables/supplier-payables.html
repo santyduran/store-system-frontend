@@ -1,0 +1,261 @@
+
+<div class="supplier-payables">
+  <header class="page-header">
+    <div>
+      <h1>Cuentas por pagar</h1>
+      <p>Consulta las facturas pendientes, vencidas y pagadas de tus proveedores.</p>
+    </div>
+
+    <button
+      type="button"
+      class="btn-primary"
+      (click)="loadData()"
+      [disabled]="loading()">
+      {{ loading() ? 'Actualizando...' : 'Actualizar' }}
+    </button>
+  </header>
+
+  @if (success()) {
+    <div class="alert alert-success" role="status">
+      {{ success() }}
+    </div>
+  }
+
+  @if (error()) {
+    <div class="alert alert-error" role="alert">
+      {{ error() }}
+    </div>
+  }
+
+  @if (summary(); as data) {
+    <section class="summary-grid">
+      <article class="summary-card">
+        <span class="summary-label">Saldo pendiente</span>
+        <strong>{{ data.pending.total | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+        <span class="summary-detail">{{ data.pending.count }} facturas pendientes</span>
+      </article>
+
+      <article class="summary-card summary-overdue">
+        <span class="summary-label">Saldo vencido</span>
+        <strong>{{ data.overdue.total | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+        <span class="summary-detail">{{ data.overdue.count }} facturas vencidas</span>
+      </article>
+
+      <article class="summary-card">
+        <span class="summary-label">Total por pagar</span>
+        <strong>{{ data.outstandingTotal | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+        <span class="summary-detail">{{ data.outstandingCount }} obligaciones abiertas</span>
+      </article>
+
+      <article class="summary-card">
+        <span class="summary-label">Total pagado</span>
+        <strong>{{ data.paid.total | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+        <span class="summary-detail">{{ data.paid.count }} facturas pagadas</span>
+      </article>
+    </section>
+  }
+
+  <section class="content-panel">
+    <nav class="tabs" aria-label="Estado de las cuentas por pagar">
+      <button
+        type="button"
+        class="tab"
+        [class.active]="activeTab() === 'PENDING'"
+        (click)="selectTab('PENDING')">
+        Pendientes
+      </button>
+
+      <button
+        type="button"
+        class="tab"
+        [class.active]="activeTab() === 'OVERDUE'"
+        (click)="selectTab('OVERDUE')">
+        Vencidas
+      </button>
+
+      <button
+        type="button"
+        class="tab"
+        [class.active]="activeTab() === 'PAID'"
+        (click)="selectTab('PAID')">
+        Pagadas
+      </button>
+    </nav>
+
+    @if (loading()) {
+      <div class="state-message">Cargando facturas...</div>
+    } @else if (invoices().length === 0) {
+      <div class="state-message">No hay facturas en esta sección.</div>
+    } @else {
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Factura</th>
+              <th>Proveedor</th>
+              <th>NIT</th>
+              <th>Compra</th>
+              <th>Emisión</th>
+              <th>Vencimiento</th>
+              <th class="numeric">Total</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (invoice of invoices(); track invoice._id) {
+              <tr>
+                <td class="invoice-number">{{ invoice.invoiceNumber }}</td>
+                <td>{{ getProviderName(invoice) }}</td>
+                <td>{{ getProviderNit(invoice) }}</td>
+                <td>{{ getPurchaseNumber(invoice) }}</td>
+                <td>{{ invoice.issueDate | date:'dd/MM/yyyy' }}</td>
+                <td>{{ invoice.dueDate ? (invoice.dueDate | date:'dd/MM/yyyy') : '—' }}</td>
+
+                <td class="numeric amount">
+                  {{ invoice.total | currency:'COP':'symbol-narrow':'1.0-0' }}
+                </td>
+
+                <td>
+                  <span
+                    class="status-badge"
+                    [class.status-pending]="invoice.status === 'PENDING'"
+                    [class.status-overdue]="invoice.status === 'OVERDUE'"
+                    [class.status-paid]="invoice.status === 'PAID'"
+                    [class.status-cancelled]="invoice.status === 'CANCELLED'">
+                    {{ getStatusLabel(invoice.status) }}
+                  </span>
+                </td>
+
+                <td class="actions-cell">
+                  <div class="invoice-actions">
+                    @if (activeTab() !== 'PAID') {
+                      <button
+                        type="button"
+                        class="btn-secondary"
+                        (click)="openPaymentForm(invoice)">
+                        Registrar pago
+                      </button>
+                    }
+
+                    <div class="attachment-actions">
+                      @if (invoice.attachment) {
+                        <button
+                          type="button"
+                          class="btn-secondary"
+                          (click)="openAttachment(invoice)"
+                          [disabled]="openingAttachmentId() === invoice._id">
+                          {{ openingAttachmentId() === invoice._id ? 'Abriendo...' : 'Ver soporte' }}
+                        </button>
+                      }
+
+                      <label
+                        class="btn-primary attachment-upload-button"
+                        [class.is-disabled]="uploadingAttachmentId() === invoice._id">
+                        {{ uploadingAttachmentId() === invoice._id
+                          ? 'Subiendo...'
+                          : 'Adjuntar soporte' }}
+
+                        <input
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp"
+                          (change)="onAttachmentSelected(invoice, $event)"
+                          [disabled]="uploadingAttachmentId() === invoice._id"
+                          hidden>
+                      </label>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  @if (showPaymentForm() && selectedInvoice(); as invoice) {
+    <div class="modal-backdrop">
+      <section
+        class="payment-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="payment-title">
+
+        <header class="modal-header">
+          <div>
+            <h2 id="payment-title">Registrar pago</h2>
+            <p>Factura {{ invoice.invoiceNumber }}</p>
+          </div>
+
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Cerrar"
+            (click)="closePaymentForm()">
+            ×
+          </button>
+        </header>
+
+        <div class="payment-total">
+          <span>Valor de la factura</span>
+          <strong>{{ invoice.total | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+        </div>
+
+        <form (ngSubmit)="registerPayment()">
+          <div class="form-group">
+            <label for="paymentMethod">Medio de pago</label>
+            <select
+              id="paymentMethod"
+              name="paymentMethod"
+              [(ngModel)]="paymentMethod"
+              required>
+              <option value="CASH">Efectivo</option>
+              <option value="CARD">Tarjeta</option>
+              <option value="TRANSFER">Transferencia</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="paymentDate">Fecha del pago</label>
+            <input
+              id="paymentDate"
+              name="paymentDate"
+              type="date"
+              [(ngModel)]="paymentDate"
+              required>
+          </div>
+
+          <div class="form-group">
+            <label for="paymentObservations">Observaciones</label>
+            <textarea
+              id="paymentObservations"
+              name="paymentObservations"
+              [(ngModel)]="paymentObservations"
+              maxlength="1000"
+              rows="3">
+            </textarea>
+          </div>
+
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="btn-secondary"
+              (click)="closePaymentForm()"
+              [disabled]="savingPayment()">
+              Cancelar
+            </button>
+
+            <button
+              type="submit"
+              class="btn-primary"
+              [disabled]="savingPayment()">
+              {{ savingPayment() ? 'Guardando...' : 'Confirmar pago' }}
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  }
+</div>

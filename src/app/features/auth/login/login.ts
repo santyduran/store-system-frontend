@@ -1,3 +1,4 @@
+
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -37,9 +38,15 @@ export class Login {
         next: () => {
           this.loading = false;
 
-          this.router.navigate([
-            '/dashboard',
-          ]);
+          const userRole =
+            localStorage.getItem('userRole');
+
+          if (userRole === 'CASHIER') {
+            this.router.navigate(['/sales']);
+            return;
+          }
+
+          this.router.navigate(['/dashboard']);
         },
 
         error: (error) => {

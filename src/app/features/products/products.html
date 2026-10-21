@@ -5,14 +5,57 @@
       <p>Gestiona los productos de la tienda.</p>
     </div>
 
-    <button
-      type="button"
-      class="btn-primary"
-      (click)="openForm()"
-    >
-      Nuevo producto
-    </button>
+    <div class="products-header-actions">
+      <label
+        for="productsCsvFile"
+        class="btn-primary btn-import"
+        [class.disabled]="importing()"
+      >
+        {{ importing() ? 'Importando...' : 'Importar CSV' }}
+      </label>
+
+      <input
+        id="productsCsvFile"
+        class="csv-file-input"
+        type="file"
+        accept=".csv,text/csv"
+        (change)="importCsv($event)"
+        [disabled]="importing()"
+      />
+
+      <button
+        type="button"
+        class="btn-primary"
+        (click)="openForm()"
+      >
+        Nuevo producto
+      </button>
+    </div>
   </div>
+
+  @if (importError()) {
+    <p class="form-error">
+      {{ importError() }}
+    </p>
+  }
+
+  @if (importSummary()) {
+    <div class="import-summary">
+      <p>{{ importSummary() }}</p>
+
+      @if (importErrors().length > 0) {
+        <details>
+          <summary>Ver detalles de las filas omitidas</summary>
+
+          <ul>
+            @for (message of importErrors(); track $index) {
+              <li>{{ message }}</li>
+            }
+          </ul>
+        </details>
+      }
+    </div>
+  }
 
   @if (showForm()) {
     <div class="product-form">
@@ -32,10 +75,7 @@
 
       <form [formGroup]="productForm">
         <div class="form-group">
-          <label for="barcode">
-            Código de barras
-          </label>
-
+          <label for="barcode">Código de barras</label>
           <input
             id="barcode"
             type="text"
@@ -45,10 +85,7 @@
         </div>
 
         <div class="form-group">
-          <label for="sku">
-            SKU
-          </label>
-
+          <label for="sku">SKU</label>
           <input
             id="sku"
             type="text"
@@ -58,10 +95,7 @@
         </div>
 
         <div class="form-group">
-          <label for="name">
-            Nombre del producto
-          </label>
-
+          <label for="name">Nombre del producto</label>
           <input
             id="name"
             type="text"
@@ -71,10 +105,7 @@
         </div>
 
         <div class="form-group">
-          <label for="brand">
-            Marca
-          </label>
-
+          <label for="brand">Marca</label>
           <input
             id="brand"
             type="text"
@@ -84,17 +115,12 @@
         </div>
 
         <div class="form-group">
-          <label for="category">
-            Categoría
-          </label>
-
+          <label for="category">Categoría</label>
           <select
             id="category"
             formControlName="categoryId"
           >
-            <option value="">
-              Selecciona una categoría
-            </option>
+            <option value="">Selecciona una categoría</option>
 
             @for (category of categories(); track category._id) {
               <option [value]="category._id">
@@ -105,10 +131,23 @@
         </div>
 
         <div class="form-group">
-          <label for="description">
-            Descripción
-          </label>
+          <label for="providerId">Proveedor</label>
+          <select
+            id="providerId"
+            formControlName="providerId"
+          >
+            <option value="">Sin proveedor</option>
 
+            @for (provider of providers(); track provider._id) {
+              <option [value]="provider._id">
+                {{ provider.businessName }} - {{ provider.nit }}
+              </option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Descripción</label>
           <textarea
             id="description"
             formControlName="description"
@@ -117,10 +156,7 @@
         </div>
 
         <div class="form-group">
-          <label for="purchasePrice">
-            Precio de compra
-          </label>
-
+          <label for="purchasePrice">Precio de compra</label>
           <input
             id="purchasePrice"
             type="number"
@@ -132,10 +168,7 @@
         </div>
 
         <div class="form-group">
-          <label for="salePrice">
-            Precio de venta
-          </label>
-
+          <label for="salePrice">Precio de venta</label>
           <input
             id="salePrice"
             type="number"
@@ -147,10 +180,7 @@
         </div>
 
         <div class="form-group">
-          <label for="stock">
-            Stock
-          </label>
-
+          <label for="stock">Stock</label>
           <input
             id="stock"
             type="number"
@@ -161,10 +191,7 @@
         </div>
 
         <div class="form-group">
-          <label for="minStock">
-            Stock mínimo
-          </label>
-
+          <label for="minStock">Stock mínimo</label>
           <input
             id="minStock"
             type="number"
@@ -176,21 +203,13 @@
 
         @if (editingProductId()) {
           <div class="form-group">
-            <label for="status">
-              Estado
-            </label>
-
+            <label for="status">Estado</label>
             <select
               id="status"
               formControlName="status"
             >
-              <option value="ACTIVE">
-                Activo
-              </option>
-
-              <option value="INACTIVE">
-                Inactivo
-              </option>
+              <option value="ACTIVE">Activo</option>
+              <option value="INACTIVE">Inactivo</option>
             </select>
           </div>
         }
@@ -261,39 +280,18 @@
                   }
                 </td>
 
-                <td>
-                  {{ product.sku }}
-                </td>
-
-                <td>
-                  {{ product.barcode }}
-                </td>
-
-                <td>
-                  {{ product.category.name }}
-                </td>
-
-                <td>
-                  {{ product.purchasePrice | number:'1.0-2' }}
-                </td>
-
-                <td>
-                  {{ product.salePrice | number:'1.0-2' }}
-                </td>
-
-                <td>
-                  {{ product.stock }}
-                </td>
+                <td>{{ product.sku }}</td>
+                <td>{{ product.barcode }}</td>
+                <td>{{ product.category.name }}</td>
+                <td>{{ product.purchasePrice | number:'1.0-2' }}</td>
+                <td>{{ product.salePrice | number:'1.0-2' }}</td>
+                <td>{{ product.stock }}</td>
 
                 <td>
                   @if (product.status === 'ACTIVE') {
-                    <span class="status active">
-                      Activo
-                    </span>
+                    <span class="status active">Activo</span>
                   } @else {
-                    <span class="status inactive">
-                      Inactivo
-                    </span>
+                    <span class="status inactive">Inactivo</span>
                   }
                 </td>
 

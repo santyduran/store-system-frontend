@@ -5,6 +5,7 @@ import {
 } from '@angular/core';
 
 import {
+  DatePipe,
   DecimalPipe,
 } from '@angular/common';
 
@@ -21,48 +22,49 @@ import {
 @Component({
   selector: 'app-cash-register',
   imports: [
+    DatePipe,
     DecimalPipe,
     FormsModule,
   ],
   templateUrl: './cash-register.html',
   styleUrl: './cash-register.scss',
 })
-export class CashRegisterComponent
-  implements OnInit
-{
-  cashRegister =
-    signal<CashRegister | null>(null);
+export class CashRegisterComponent implements OnInit {
+  cashRegister = signal<CashRegister | null>(null);
 
-  movements =
-    signal<CashMovement[]>([]);
+  movements = signal<CashMovement[]>([]);
+
+  history = signal<CashRegister[]>([]);
 
   loading = signal(true);
 
   movementsLoading = signal(false);
 
+  historyLoading = signal(false);
+
   error = signal('');
 
   movementsError = signal('');
 
-  openingAmount =
-    signal<number | null>(null);
+  historyError = signal('');
+
+  openingAmount = signal<number | null>(null);
 
   openingCash = signal(false);
 
   openCashError = signal('');
 
-  countedCash =
-    signal<number | null>(null);
+  countedCash = signal<number | null>(null);
+
+  differenceReason = signal('');
 
   closingCash = signal(false);
 
   closeCashError = signal('');
 
-  cashEntryAmount =
-    signal<number | null>(null);
+  cashEntryAmount = signal<number | null>(null);
 
-  cashEntryDescription =
-    signal('');
+  cashEntryDescription = signal('');
 
   cashEntryLoading = signal(false);
 
@@ -70,11 +72,9 @@ export class CashRegisterComponent
 
   cashEntrySuccess = signal('');
 
-  cashExitAmount =
-    signal<number | null>(null);
+  cashExitAmount = signal<number | null>(null);
 
-  cashExitDescription =
-    signal('');
+  cashExitDescription = signal('');
 
   cashExitLoading = signal(false);
 
@@ -82,51 +82,41 @@ export class CashRegisterComponent
 
   cashExitSuccess = signal('');
 
+  constructor(
+    private readonly cashRegisterService: CashRegisterService,
+  ) {}
+
   ngOnInit(): void {
     this.loadCurrentCashRegister();
+    this.loadHistory();
   }
-
-  constructor(
-    private readonly cashRegisterService:
-      CashRegisterService,
-  ) {}
 
   loadCurrentCashRegister(): void {
     this.loading.set(true);
-
     this.error.set('');
 
     this.cashRegisterService
       .getCurrent()
       .subscribe({
         next: (cashRegister) => {
-          this.cashRegister.set(
-            cashRegister,
-          );
-
+          this.cashRegister.set(cashRegister);
           this.loading.set(false);
-
           this.loadMovements();
         },
-
         error: (error) => {
           if (error?.status === 400) {
             this.loadLatestCashRegister();
-
             return;
           }
 
           this.cashRegister.set(null);
-
           this.loading.set(false);
-
           this.movements.set([]);
 
           if (error?.status === 401) {
             this.error.set(
               'Tu sesión ha expirado. Inicia sesión nuevamente.',
             );
-
             return;
           }
 
@@ -142,27 +132,19 @@ export class CashRegisterComponent
       .getLatest()
       .subscribe({
         next: (cashRegister) => {
-          this.cashRegister.set(
-            cashRegister,
-          );
-
+          this.cashRegister.set(cashRegister);
           this.loading.set(false);
-
           this.loadMovements();
         },
-
         error: (error) => {
           this.cashRegister.set(null);
-
           this.loading.set(false);
-
           this.movements.set([]);
 
           if (error?.status === 400) {
             this.error.set(
               'No tienes una caja registrada actualmente.',
             );
-
             return;
           }
 
@@ -170,7 +152,6 @@ export class CashRegisterComponent
             this.error.set(
               'Tu sesión ha expirado. Inicia sesión nuevamente.',
             );
-
             return;
           }
 
@@ -186,36 +167,29 @@ export class CashRegisterComponent
       .getCurrent()
       .subscribe({
         next: (cashRegister) => {
-          this.cashRegister.set(
-            cashRegister,
-          );
-
+          this.cashRegister.set(cashRegister);
           this.error.set('');
-
           this.loadMovements();
+          this.loadHistory();
         },
-
         error: (error) => {
           if (error?.status === 400) {
             this.cashRegisterService
               .getLatest()
               .subscribe({
                 next: (cashRegister) => {
-                  this.cashRegister.set(
-                    cashRegister,
-                  );
-
+                  this.cashRegister.set(cashRegister);
                   this.loadMovements();
+                  this.loadHistory();
                 },
-
                 error: (latestError) => {
-                  if (
-                    latestError?.status === 401
-                  ) {
+                  if (latestError?.status === 401) {
                     this.error.set(
                       'Tu sesión ha expirado. Inicia sesión nuevamente.',
                     );
                   }
+
+                  this.loadHistory();
                 },
               });
 
@@ -227,36 +201,70 @@ export class CashRegisterComponent
               'Tu sesión ha expirado. Inicia sesión nuevamente.',
             );
           }
+
+          this.loadHistory();
+        },
+      });
+  }
+
+  getCashRegisterUserName(
+    userId: CashRegister['userId'],
+  ): string {
+    if (userId && typeof userId === 'object') {
+      return userId.name || userId.email || 'No disponible';
+    }
+
+    return userId || 'No disponible';
+  }
+
+  loadHistory(): void {
+    this.historyLoading.set(true);
+    this.historyError.set('');
+
+    this.cashRegisterService
+      .getHistory()
+      .subscribe({
+        next: (history) => {
+          this.history.set(history ?? []);
+          this.historyLoading.set(false);
+        },
+        error: (error) => {
+          this.history.set([]);
+          this.historyLoading.set(false);
+
+          if (error?.status === 401) {
+            this.historyError.set(
+              'Tu sesión ha expirado. Inicia sesión nuevamente.',
+            );
+            return;
+          }
+
+          this.historyError.set(
+            'No fue posible consultar el historial de cajas.',
+          );
         },
       });
   }
 
   loadMovements(): void {
     this.movementsLoading.set(true);
-
     this.movementsError.set('');
 
     this.cashRegisterService
       .getMovements()
       .subscribe({
         next: (movements) => {
-          this.movements.set(
-            movements,
-          );
-
+          this.movements.set(movements);
           this.movementsLoading.set(false);
         },
-
         error: (error) => {
           this.movements.set([]);
-
           this.movementsLoading.set(false);
 
           if (error?.status === 401) {
             this.movementsError.set(
               'Tu sesión ha expirado. Inicia sesión nuevamente.',
             );
-
             return;
           }
 
@@ -267,28 +275,20 @@ export class CashRegisterComponent
       });
   }
 
-  updateOpeningAmount(
-    value: number | null,
-  ): void {
+  updateOpeningAmount(value: number | null): void {
     this.openingAmount.set(value);
-
     this.openCashError.set('');
   }
 
   openCashRegister(): void {
     this.openCashError.set('');
 
-    const amount =
-      this.openingAmount();
+    const amount = this.openingAmount();
 
-    if (
-      amount === null ||
-      Number.isNaN(amount)
-    ) {
+    if (amount === null || Number.isNaN(amount)) {
       this.openCashError.set(
         'Ingresa el dinero inicial de la caja.',
       );
-
       return;
     }
 
@@ -296,7 +296,6 @@ export class CashRegisterComponent
       this.openCashError.set(
         'El dinero inicial no puede ser negativo.',
       );
-
       return;
     }
 
@@ -312,21 +311,13 @@ export class CashRegisterComponent
       })
       .subscribe({
         next: (cashRegister) => {
-          this.cashRegister.set(
-            cashRegister,
-          );
-
+          this.cashRegister.set(cashRegister);
           this.openingAmount.set(null);
-
           this.openCashError.set('');
-
           this.openingCash.set(false);
-
           this.error.set('');
-
           this.syncCashRegisterState();
         },
-
         error: (error) => {
           this.openingCash.set(false);
 
@@ -337,7 +328,6 @@ export class CashRegisterComponent
             );
 
             this.syncCashRegisterState();
-
             return;
           }
 
@@ -345,7 +335,6 @@ export class CashRegisterComponent
             this.openCashError.set(
               'Tu sesión ha expirado. Inicia sesión nuevamente.',
             );
-
             return;
           }
 
@@ -356,28 +345,43 @@ export class CashRegisterComponent
       });
   }
 
-  updateCountedCash(
-    value: number | null,
-  ): void {
+  updateCountedCash(value: number | null): void {
     this.countedCash.set(value);
-
     this.closeCashError.set('');
+  }
+
+  updateDifferenceReason(value: string): void {
+    this.differenceReason.set(value);
+    this.closeCashError.set('');
+  }
+
+  getCashDifference(): number {
+    const amount = this.countedCash();
+    const expected = this.cashRegister()?.expectedCash;
+
+    if (
+      amount === null ||
+      amount === undefined ||
+      !Number.isFinite(amount) ||
+      expected === null ||
+      expected === undefined ||
+      !Number.isFinite(Number(expected))
+    ) {
+      return 0;
+    }
+
+    return Number((amount - Number(expected)).toFixed(2));
   }
 
   closeCashRegister(): void {
     this.closeCashError.set('');
 
-    const amount =
-      this.countedCash();
+    const amount = this.countedCash();
 
-    if (
-      amount === null ||
-      Number.isNaN(amount)
-    ) {
+    if (amount === null || Number.isNaN(amount)) {
       this.closeCashError.set(
         'Ingresa el efectivo contado de la caja.',
       );
-
       return;
     }
 
@@ -385,7 +389,16 @@ export class CashRegisterComponent
       this.closeCashError.set(
         'El efectivo contado no puede ser negativo.',
       );
+      return;
+    }
 
+    const difference = this.getCashDifference();
+    const reason = this.differenceReason().trim();
+
+    if (Math.abs(difference) > 0.009 && !reason) {
+      this.closeCashError.set(
+        'Debes indicar el motivo de la diferencia para cerrar la caja.',
+      );
       return;
     }
 
@@ -393,29 +406,35 @@ export class CashRegisterComponent
       return;
     }
 
+    const differenceMessage =
+      difference < 0
+        ? `Faltante de efectivo: $${Math.abs(difference).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`
+        : difference > 0
+          ? `Sobrante de efectivo: $${difference.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`
+          : 'El efectivo contado coincide con el efectivo esperado.';
+
     this.closingCash.set(true);
 
     this.cashRegisterService
       .close({
         countedCash: amount,
+        differenceReason: reason,
       })
       .subscribe({
         next: (cashRegister) => {
-          this.cashRegister.set(
-            cashRegister,
-          );
-
+          this.cashRegister.set(cashRegister);
           this.countedCash.set(null);
-
+          this.differenceReason.set('');
           this.closeCashError.set('');
-
           this.closingCash.set(false);
-
           this.error.set('');
+
+          window.alert(
+            `Cierre de caja realizado.\n${differenceMessage}`,
+          );
 
           this.syncCashRegisterState();
         },
-
         error: (error) => {
           this.closingCash.set(false);
 
@@ -426,7 +445,6 @@ export class CashRegisterComponent
             );
 
             this.syncCashRegisterState();
-
             return;
           }
 
@@ -434,7 +452,6 @@ export class CashRegisterComponent
             this.closeCashError.set(
               'Tu sesión ha expirado. Inicia sesión nuevamente.',
             );
-
             return;
           }
 
@@ -445,45 +462,29 @@ export class CashRegisterComponent
       });
   }
 
-  updateCashEntryAmount(
-    value: number | null,
-  ): void {
+  updateCashEntryAmount(value: number | null): void {
     this.cashEntryAmount.set(value);
-
     this.cashEntryError.set('');
-
     this.cashEntrySuccess.set('');
   }
 
-  updateCashEntryDescription(
-    value: string,
-  ): void {
+  updateCashEntryDescription(value: string): void {
     this.cashEntryDescription.set(value);
-
     this.cashEntryError.set('');
-
     this.cashEntrySuccess.set('');
   }
 
   createCashEntry(): void {
     this.cashEntryError.set('');
-
     this.cashEntrySuccess.set('');
 
-    const amount =
-      this.cashEntryAmount();
+    const amount = this.cashEntryAmount();
+    const description = this.cashEntryDescription().trim();
 
-    const description =
-      this.cashEntryDescription().trim();
-
-    if (
-      amount === null ||
-      Number.isNaN(amount)
-    ) {
+    if (amount === null || Number.isNaN(amount)) {
       this.cashEntryError.set(
         'Ingresa el monto de la entrada de caja.',
       );
-
       return;
     }
 
@@ -491,7 +492,6 @@ export class CashRegisterComponent
       this.cashEntryError.set(
         'El monto de la entrada debe ser mayor que cero.',
       );
-
       return;
     }
 
@@ -499,7 +499,6 @@ export class CashRegisterComponent
       this.cashEntryError.set(
         'Ingresa el motivo de la entrada de caja.',
       );
-
       return;
     }
 
@@ -516,16 +515,10 @@ export class CashRegisterComponent
       })
       .subscribe({
         next: (cashRegister) => {
-          this.cashRegister.set(
-            cashRegister,
-          );
-
+          this.cashRegister.set(cashRegister);
           this.cashEntryAmount.set(null);
-
           this.cashEntryDescription.set('');
-
           this.cashEntryLoading.set(false);
-
           this.cashEntryError.set('');
 
           this.cashEntrySuccess.set(
@@ -533,10 +526,8 @@ export class CashRegisterComponent
           );
 
           this.error.set('');
-
           this.syncCashRegisterState();
         },
-
         error: (error) => {
           this.cashEntryLoading.set(false);
 
@@ -547,7 +538,6 @@ export class CashRegisterComponent
             );
 
             this.syncCashRegisterState();
-
             return;
           }
 
@@ -555,7 +545,6 @@ export class CashRegisterComponent
             this.cashEntryError.set(
               'Tu sesión ha expirado. Inicia sesión nuevamente.',
             );
-
             return;
           }
 
@@ -566,45 +555,29 @@ export class CashRegisterComponent
       });
   }
 
-  updateCashExitAmount(
-    value: number | null,
-  ): void {
+  updateCashExitAmount(value: number | null): void {
     this.cashExitAmount.set(value);
-
     this.cashExitError.set('');
-
     this.cashExitSuccess.set('');
   }
 
-  updateCashExitDescription(
-    value: string,
-  ): void {
+  updateCashExitDescription(value: string): void {
     this.cashExitDescription.set(value);
-
     this.cashExitError.set('');
-
     this.cashExitSuccess.set('');
   }
 
   createCashExit(): void {
     this.cashExitError.set('');
-
     this.cashExitSuccess.set('');
 
-    const amount =
-      this.cashExitAmount();
+    const amount = this.cashExitAmount();
+    const description = this.cashExitDescription().trim();
 
-    const description =
-      this.cashExitDescription().trim();
-
-    if (
-      amount === null ||
-      Number.isNaN(amount)
-    ) {
+    if (amount === null || Number.isNaN(amount)) {
       this.cashExitError.set(
         'Ingresa el monto de la salida de caja.',
       );
-
       return;
     }
 
@@ -612,7 +585,6 @@ export class CashRegisterComponent
       this.cashExitError.set(
         'El monto de la salida debe ser mayor que cero.',
       );
-
       return;
     }
 
@@ -620,7 +592,6 @@ export class CashRegisterComponent
       this.cashExitError.set(
         'Ingresa el motivo de la salida de caja.',
       );
-
       return;
     }
 
@@ -631,7 +602,6 @@ export class CashRegisterComponent
       this.cashExitError.set(
         'La salida no puede superar el efectivo disponible en la caja.',
       );
-
       return;
     }
 
@@ -648,16 +618,10 @@ export class CashRegisterComponent
       })
       .subscribe({
         next: (cashRegister) => {
-          this.cashRegister.set(
-            cashRegister,
-          );
-
+          this.cashRegister.set(cashRegister);
           this.cashExitAmount.set(null);
-
           this.cashExitDescription.set('');
-
           this.cashExitLoading.set(false);
-
           this.cashExitError.set('');
 
           this.cashExitSuccess.set(
@@ -665,10 +629,8 @@ export class CashRegisterComponent
           );
 
           this.error.set('');
-
           this.syncCashRegisterState();
         },
-
         error: (error) => {
           this.cashExitLoading.set(false);
 
@@ -679,7 +641,6 @@ export class CashRegisterComponent
             );
 
             this.syncCashRegisterState();
-
             return;
           }
 
@@ -687,7 +648,6 @@ export class CashRegisterComponent
             this.cashExitError.set(
               'Tu sesión ha expirado. Inicia sesión nuevamente.',
             );
-
             return;
           }
 

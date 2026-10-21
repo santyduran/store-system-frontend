@@ -5,6 +5,23 @@
       <h1>Ventas</h1>
       <p>Registra ventas, administra el carrito y consulta el historial.</p>
     </div>
+
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <a
+        href="/dashboard"
+        class="btn-secondary"
+        style="display: inline-flex; align-items: center; text-decoration: none; cursor: pointer;"
+      >
+        Menú
+      </a>
+      <button
+        type="button"
+        class="btn-primary"
+        (click)="navigateToCashRegister()"
+      >
+        Abrir caja / cerrar caja
+      </button>
+    </div>
   </div>
 
   @if (saleError()) {
@@ -376,8 +393,8 @@
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M3 9h2M19 9h2M3 15h2M19 15h2"></path>
             </svg>
-            <strong>Efectivo</strong>
-            <span>Pago en efectivo</span>
+            <strong>Pago Efectivo</strong>
+            <span></span>
           </button>
 
           <button
@@ -402,8 +419,8 @@
               <path d="M3 10h18"></path>
               <path d="M7 15h3"></path>
             </svg>
-            <strong>Tarjeta</strong>
-            <span>Pago con tarjeta</span>
+            <strong>Pago con Tarjeta</strong>
+            <span></span>
           </button>
 
           <button
@@ -429,8 +446,8 @@
               <path d="M20 17H4"></path>
               <path d="m10 13-6 4 6 4"></path>
             </svg>
-            <strong>Transferencia</strong>
-            <span>Transferencia bancaria</span>
+            <strong>Transferencia bancaria</strong>
+            <span></span>
           </button>
         </div>
       </div>
@@ -1078,4 +1095,3 @@
       </div>
     </div>
   }
-</div>

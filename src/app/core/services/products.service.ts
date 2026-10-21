@@ -14,12 +14,18 @@ export interface Product {
   salePrice: number;
   stock: number;
   minStock: number;
+  taxRate?: number;
   category: {
     _id: string;
     name: string;
     description?: string;
     status: string;
   };
+  provider?: {
+    _id: string;
+    businessName: string;
+    nit?: string;
+  } | string | null;
   status: 'ACTIVE' | 'INACTIVE';
   createdAt: string;
   updatedAt: string;
@@ -38,6 +44,14 @@ export class ProductsService {
   findAll(): Observable<Product[]> {
     return this.http.get<Product[]>(
       `${this.apiUrl}/products`,
+    );
+  }
+
+  findByProvider(
+    providerId: string,
+  ): Observable<Product[]> {
+    return this.http.get<Product[]>(
+      `${this.apiUrl}/products/by-provider/${providerId}`,
     );
   }
 
@@ -68,11 +82,13 @@ export class ProductsService {
     name: string;
     brand?: string;
     categoryId: string;
+    providerId?: string | null;
     description?: string;
     purchasePrice: number;
     salePrice: number;
     stock: number;
     minStock: number;
+    taxRate?: number;
     attributes?: Record<string, unknown>;
   }): Observable<Product> {
     return this.http.post<Product>(
@@ -89,11 +105,13 @@ export class ProductsService {
       name?: string;
       brand?: string;
       categoryId?: string;
+      providerId?: string | null;
       description?: string;
       purchasePrice?: number;
       salePrice?: number;
       stock?: number;
       minStock?: number;
+      taxRate?: number;
       attributes?: Record<string, unknown>;
       status?: 'ACTIVE' | 'INACTIVE';
     },

@@ -1,24 +1,25 @@
+
 <div class="cash-register">
-  <div class="cash-register-header">
+  <div class="cash-register-header" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
     <div>
-      <span class="cash-register-eyebrow">
-        STORE SYSTEM
-      </span>
-
+      <span class="cash-register-eyebrow">STORE SYSTEM</span>
       <h1>Caja</h1>
-
-      <p>
-        Administra la apertura y el estado actual de la caja.
-      </p>
+      <p>Administra la apertura y el estado actual de la caja.</p>
     </div>
+
+    <a
+      href="/sales"
+      class="btn-primary"
+      style="display: inline-flex; align-items: center; text-decoration: none; cursor: pointer;"
+    >
+      Volver a Ventas
+    </a>
   </div>
 
   @if (loading()) {
     <div class="cash-register-card">
       <div class="cash-register-message">
-        <p>
-          Consultando el estado de la caja...
-        </p>
+        <p>Consultando el estado de la caja...</p>
       </div>
     </div>
   }
@@ -28,39 +29,22 @@
       <div class="cash-register-card-header">
         <div>
           <h2>Abrir caja</h2>
-
-          <p>
-            Registra el dinero inicial disponible en la caja.
-          </p>
+          <p>Registra el dinero inicial disponible en la caja.</p>
         </div>
       </div>
 
       <div class="cash-register-status closed">
-        <div class="cash-register-status-icon">
-          🔒
-        </div>
-
+        <div class="cash-register-status-icon">🔒</div>
         <div>
-          <strong>
-            Caja cerrada
-          </strong>
-
-          <p>
-            Actualmente no tienes una caja abierta.
-          </p>
+          <strong>Caja cerrada</strong>
+          <p>Actualmente no tienes una caja abierta.</p>
         </div>
       </div>
 
       <div class="cash-register-form">
-        <label for="openingAmount">
-          Dinero inicial
-        </label>
-
+        <label for="openingAmount">Dinero inicial</label>
         <div class="cash-input">
-          <span>
-            $
-          </span>
-
+          <span>$</span>
           <input
             id="openingAmount"
             type="number"
@@ -72,16 +56,11 @@
             [disabled]="openingCash()"
           />
         </div>
-
-        <small>
-          Ingresa el efectivo con el que comienza la jornada.
-        </small>
+        <small>Ingresa el efectivo con el que comienza la jornada.</small>
       </div>
 
       @if (openCashError()) {
-        <div class="cash-register-error">
-          {{ openCashError() }}
-        </div>
+        <div class="cash-register-error">{{ openCashError() }}</div>
       }
 
       <div class="cash-register-actions">
@@ -101,97 +80,51 @@
     </div>
   }
 
-  @if (
-    !loading() &&
-    cashRegister() &&
-    cashRegister()!.status === 'OPEN'
-  ) {
+  @if (!loading() && cashRegister() && cashRegister()!.status === 'OPEN') {
     <div class="cash-register-card">
       <div class="cash-register-card-header">
         <div>
           <h2>Caja abierta</h2>
-
-          <p>
-            Información de la caja actualmente abierta.
-          </p>
+          <p>Información de la caja actualmente abierta.</p>
         </div>
-
-        <span class="cash-register-badge open">
-          ABIERTA
-        </span>
+        <span class="cash-register-badge open">ABIERTA</span>
       </div>
 
       <div class="cash-register-status opened">
-        <div class="cash-register-status-icon">
-          🔓
-        </div>
-
+        <div class="cash-register-status-icon">🔓</div>
         <div>
-          <strong>
-            La caja está abierta
-          </strong>
-
-          <p>
-            Puedes continuar registrando operaciones en la tienda.
-          </p>
+          <strong>La caja está abierta</strong>
+          <p>Puedes continuar registrando operaciones en la tienda.</p>
         </div>
       </div>
 
       <div class="cash-register-summary">
         <div class="cash-register-summary-item">
-          <span>
-            Dinero inicial
-          </span>
-
-          <strong>
-            ${{ cashRegister()!.openingAmount | number:'1.0-2' }}
-          </strong>
+          <span>Dinero inicial</span>
+          <strong>${{ cashRegister()!.openingAmount | number:'1.0-2' }}</strong>
         </div>
 
         <div class="cash-register-summary-item highlight">
-          <span>
-            Efectivo esperado
-          </span>
-
-          <strong>
-            ${{ cashRegister()!.expectedCash | number:'1.0-2' }}
-          </strong>
+          <span>Efectivo esperado</span>
+          <strong>${{ cashRegister()!.expectedCash | number:'1.0-2' }}</strong>
         </div>
 
         <div class="cash-register-summary-item">
-          <span>
-            Fecha de apertura
-          </span>
-
-          <strong>
-            {{ cashRegister()!.openingDate }}
-          </strong>
+          <span>Fecha de apertura</span>
+          <strong>{{ cashRegister()!.openingDate | date:'dd/MM/yyyy HH:mm' }}</strong>
         </div>
       </div>
 
       <div class="cash-register-close">
         <div class="cash-register-close-header">
-          <div>
-            <h3>
-              Cerrar caja
-            </h3>
-
-            <p>
-              Cuenta físicamente el dinero disponible y registra el valor contado.
-            </p>
-          </div>
+          <h3>Cerrar caja</h3>
+          <p>Cuenta físicamente el dinero disponible y registra el valor contado.</p>
         </div>
 
         <div class="cash-register-form">
-          <label for="countedCash">
-            Efectivo contado
-          </label>
-
+          <label for="countedCash">Efectivo contado</label>
           <div class="cash-input">
-            <span>
-              $
-            </span>
-
+            <span>$</span>
             <input
               id="countedCash"
               type="number"
@@ -203,16 +136,54 @@
               [disabled]="closingCash()"
             />
           </div>
+          <small>Ingresa el dinero que realmente tienes en efectivo.</small>
+        </div>
 
+        @if (countedCash() !== null && countedCash() !== undefined) {
+          <div
+            class="cash-register-status"
+            [class.closed]="getCashDifference() < -0.009"
+            [class.opened]="getCashDifference() > 0.009"
+          >
+            <div>
+              @if (getCashDifference() < -0.009) {
+                <strong>Faltante de efectivo</strong>
+                <p>
+                  Faltan ${{ -getCashDifference() | number:'1.0-2' }}
+                  respecto al efectivo esperado.
+                </p>
+              } @else if (getCashDifference() > 0.009) {
+                <strong>Sobrante de efectivo</strong>
+                <p>
+                  Sobran ${{ getCashDifference() | number:'1.0-2' }}
+                  respecto al efectivo esperado.
+                </p>
+              } @else {
+                <strong>Caja cuadrada</strong>
+                <p>El efectivo contado coincide con el efectivo esperado.</p>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="cash-register-form">
+          <label for="differenceReason">Motivo de la diferencia (si aplica)</label>
+          <textarea
+            id="differenceReason"
+            rows="3"
+            maxlength="500"
+            placeholder="Si hay un faltante o sobrante, explica aquí el motivo..."
+            [ngModel]="differenceReason()"
+            (ngModelChange)="updateDifferenceReason($event)"
+            [disabled]="closingCash()"
+          ></textarea>
           <small>
-            Ingresa el dinero que realmente tienes en efectivo.
+            Si el efectivo contado no coincide con el esperado, debes explicar la diferencia.
           </small>
         </div>
 
         @if (closeCashError()) {
-          <div class="cash-register-error">
-            {{ closeCashError() }}
-          </div>
+          <div class="cash-register-error">{{ closeCashError() }}</div>
         }
 
         <div class="cash-register-actions">
@@ -233,204 +204,234 @@
     </div>
   }
 
-  @if (
-    !loading() &&
-    cashRegister() &&
-    cashRegister()!.status === 'CLOSED'
-  ) {
+  @if (!loading() && cashRegister() && cashRegister()!.status === 'CLOSED') {
     <div class="cash-register-card">
       <div class="cash-register-card-header">
         <div>
           <h2>Caja cerrada</h2>
-
-          <p>
-            Resumen de la última caja cerrada.
-          </p>
+          <p>Resumen de la última caja cerrada.</p>
         </div>
-
-        <span class="cash-register-badge closed">
-          CERRADA
-        </span>
+        <span class="cash-register-badge closed">CERRADA</span>
       </div>
 
       <div class="cash-register-status closed">
-        <div class="cash-register-status-icon">
-          🔒
-        </div>
-
+        <div class="cash-register-status-icon">🔒</div>
         <div>
-          <strong>
-            La caja está cerrada
-          </strong>
-
-          <p>
-            La jornada de caja ha finalizado correctamente.
-          </p>
+          <strong>La caja está cerrada</strong>
+          <p>La jornada de caja ha finalizado correctamente.</p>
         </div>
       </div>
 
       <div class="cash-register-summary">
         <div class="cash-register-summary-item">
-          <span>
-            Dinero inicial
-          </span>
-
-          <strong>
-            ${{ cashRegister()!.openingAmount | number:'1.0-2' }}
-          </strong>
+          <span>Dinero inicial</span>
+          <strong>${{ cashRegister()!.openingAmount | number:'1.0-2' }}</strong>
         </div>
 
         <div class="cash-register-summary-item">
-          <span>
-            Efectivo esperado
-          </span>
-
-          <strong>
-            ${{ cashRegister()!.expectedCash | number:'1.0-2' }}
-          </strong>
+          <span>Efectivo esperado</span>
+          <strong>${{ cashRegister()!.expectedCash | number:'1.0-2' }}</strong>
         </div>
 
         <div class="cash-register-summary-item">
-          <span>
-            Efectivo contado
-          </span>
-
-          <strong>
-            ${{ cashRegister()!.countedCash | number:'1.0-2' }}
-          </strong>
+          <span>Efectivo contado</span>
+          <strong>${{ cashRegister()!.countedCash | number:'1.0-2' }}</strong>
         </div>
 
         <div class="cash-register-summary-item highlight">
-          <span>
-            Diferencia
-          </span>
-
-          <strong>
-            ${{ cashRegister()!.difference | number:'1.0-2' }}
-          </strong>
+          <span>Diferencia</span>
+          <strong>${{ cashRegister()!.difference | number:'1.0-2' }}</strong>
         </div>
 
         <div class="cash-register-summary-item">
-          <span>
-            Fecha de apertura
-          </span>
-
-          <strong>
-            {{ cashRegister()!.openingDate }}
-          </strong>
+          <span>Fecha de apertura</span>
+          <strong>{{ cashRegister()!.openingDate | date:'dd/MM/yyyy HH:mm' }}</strong>
         </div>
 
         <div class="cash-register-summary-item">
-          <span>
-            Fecha de cierre
-          </span>
-
-          <strong>
-            {{ cashRegister()!.closingDate }}
-          </strong>
+          <span>Fecha de cierre</span>
+          <strong>{{ cashRegister()!.closingDate | date:'dd/MM/yyyy HH:mm' }}</strong>
         </div>
       </div>
+
+      @if (cashRegister()!.differenceReason) {
+        <div class="cash-register-status closed">
+          <div>
+            <strong>Motivo de la diferencia</strong>
+            <p>{{ cashRegister()!.differenceReason }}</p>
+          </div>
+        </div>
+      }
     </div>
   }
 
-  @if (
-    !loading() &&
-    cashRegister()
-  ) {
+  <div class="cash-register-card">
+    <div class="cash-register-card-header">
+      <div>
+        <h2>Historial de cajas</h2>
+        <p>
+          Consulta las aperturas y cierres anteriores, sus diferencias y sus motivos.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="btn-primary"
+        [disabled]="historyLoading()"
+        (click)="loadHistory()"
+      >
+        {{ historyLoading() ? 'Actualizando...' : 'Actualizar historial' }}
+      </button>
+    </div>
+
+    @if (historyLoading()) {
+      <div class="cash-register-message">
+        <p>Consultando el historial de cajas...</p>
+      </div>
+    }
+
+    @if (!historyLoading() && historyError()) {
+      <div class="cash-register-error">{{ historyError() }}</div>
+    }
+
+    @if (!historyLoading() && !historyError() && history().length === 0) {
+      <div class="cash-register-empty">
+        <div class="cash-register-empty-icon">📋</div>
+        <strong>No hay cajas registradas</strong>
+        <p>Las cajas abiertas y cerradas aparecerán aquí.</p>
+      </div>
+    }
+
+    @if (!historyLoading() && !historyError() && history().length > 0) {
+      <div class="cash-register-table-wrapper">
+        <table class="cash-register-table">
+          <thead>
+            <tr>
+              <th>Fecha de apertura</th>
+              <th>Fecha de cierre</th>
+              <th>Estado</th>
+              <th>Dinero inicial</th>
+              <th>Efectivo esperado</th>
+              <th>Efectivo contado</th>
+              <th>Diferencia</th>
+              <th>Motivo de la diferencia</th>
+              <th>Responsable</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (item of history(); track item._id) {
+              <tr>
+                <td>
+                  {{ item.openingDate | date:'dd/MM/yyyy HH:mm' }}
+                </td>
+
+                <td>
+                  @if (item.closingDate) {
+                    {{ item.closingDate | date:'dd/MM/yyyy HH:mm' }}
+                  } @else {
+                    —
+                  }
+                </td>
+
+                <td>
+                  <span
+                    class="cash-register-badge"
+                    [class.open]="item.status === 'OPEN'"
+                    [class.closed]="item.status === 'CLOSED'"
+                  >
+                    {{ item.status === 'OPEN' ? 'ABIERTA' : 'CERRADA' }}
+                  </span>
+                </td>
+
+                <td>${{ item.openingAmount | number:'1.0-2' }}</td>
+
+                <td>${{ item.expectedCash | number:'1.0-2' }}</td>
+
+                <td>
+                  @if (item.countedCash !== undefined && item.countedCash !== null) {
+                    ${{ item.countedCash | number:'1.0-2' }}
+                  } @else {
+                    —
+                  }
+                </td>
+
+                <td>
+                  @if (item.difference !== undefined && item.difference !== null) {
+                    <strong
+                      [class.cash-amount-in]="item.difference > 0.009"
+                      [class.cash-amount-out]="item.difference < -0.009"
+                    >
+                      @if (item.difference > 0.009) {
+                        +
+                      }
+                      ${{ item.difference | number:'1.0-2' }}
+                    </strong>
+                  } @else {
+                    —
+                  }
+                </td>
+
+                <td>
+                  {{ item.differenceReason || 'Sin diferencia registrada' }}
+                </td>
+
+                <td>
+                  {{ getCashRegisterUserName(item.userId) }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  @if (!loading() && cashRegister()) {
     <div class="cash-register-card movements-card">
       <div class="cash-register-card-header">
         <div>
-          <h2>
-            Historial de movimientos
-          </h2>
-
-          <p>
-            Consulta las entradas y salidas de efectivo de la caja actual.
-          </p>
+          <h2>Historial de movimientos</h2>
+          <p>Consulta las entradas y salidas de efectivo de la caja actual.</p>
         </div>
       </div>
 
       @if (movementsLoading()) {
         <div class="cash-register-message">
-          <p>
-            Consultando movimientos...
-          </p>
+          <p>Consultando movimientos...</p>
         </div>
       }
 
-      @if (
-        !movementsLoading() &&
-        movementsError()
-      ) {
-        <div class="cash-register-error">
-          {{ movementsError() }}
-        </div>
+      @if (!movementsLoading() && movementsError()) {
+        <div class="cash-register-error">{{ movementsError() }}</div>
       }
 
-      @if (
-        !movementsLoading() &&
-        !movementsError() &&
-        movements().length === 0
-      ) {
+      @if (!movementsLoading() && !movementsError() && movements().length === 0) {
         <div class="cash-register-empty">
-          <div class="cash-register-empty-icon">
-            📋
-          </div>
-
-          <strong>
-            No hay movimientos registrados
-          </strong>
-
-          <p>
-            Los movimientos de esta caja aparecerán aquí.
-          </p>
+          <div class="cash-register-empty-icon">📋</div>
+          <strong>No hay movimientos registrados</strong>
+          <p>Los movimientos de esta caja aparecerán aquí.</p>
         </div>
       }
 
-      @if (
-        !movementsLoading() &&
-        !movementsError() &&
-        movements().length > 0
-      ) {
+      @if (!movementsLoading() && !movementsError() && movements().length > 0) {
         <div class="cash-register-table-wrapper">
           <table class="cash-register-table">
             <thead>
               <tr>
-                <th>
-                  Fecha
-                </th>
-
-                <th>
-                  Movimiento
-                </th>
-
-                <th>
-                  Tipo
-                </th>
-
-                <th>
-                  Descripción
-                </th>
-
-                <th>
-                  Venta
-                </th>
-
-                <th>
-                  Monto
-                </th>
+                <th>Fecha</th>
+                <th>Movimiento</th>
+                <th>Tipo</th>
+                <th>Descripción</th>
+                <th>Venta</th>
+                <th>Monto</th>
               </tr>
             </thead>
 
             <tbody>
-              @for (
-                movement of movements();
-                track movement._id
-              ) {
+              @for (movement of movements(); track movement._id) {
                 <tr>
-                  <td>
-                    {{ movement.createdAt }}
-                  </td>
+                  <td>{{ movement.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
 
                   <td>
                     <span
@@ -462,9 +463,7 @@
                     }
                   </td>
 
-                  <td>
-                    {{ movement.description || 'Sin descripción' }}
-                  </td>
+                  <td>{{ movement.description || 'Sin descripción' }}</td>
 
                   <td>
                     @if (movement.saleId) {
@@ -484,7 +483,6 @@
                       } @else {
                         -
                       }
-
                       ${{ movement.amount | number:'1.0-2' }}
                     </strong>
                   </td>
@@ -497,12 +495,7 @@
     </div>
   }
 
-  @if (
-    !loading() &&
-    error()
-  ) {
-    <div class="cash-register-error">
-      {{ error() }}
-    </div>
+  @if (!loading() && error()) {
+    <div class="cash-register-error">{{ error() }}</div>
   }
 </div>

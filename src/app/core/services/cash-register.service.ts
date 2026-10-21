@@ -13,15 +13,23 @@ export type CashMovementType =
 
 export type CashMovementDirection = 'IN' | 'OUT';
 
+export interface CashRegisterUser {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
 export interface CashRegister {
   _id: string;
-  userId: string;
+  userId: string | CashRegisterUser;
   openingAmount: number;
   openingDate: string;
   closingDate?: string;
   expectedCash: number;
   countedCash?: number;
   difference?: number;
+  differenceReason?: string;
   status: CashRegisterStatus;
   createdAt: string;
   updatedAt: string;
@@ -33,6 +41,7 @@ export interface OpenCashRegister {
 
 export interface CloseCashRegister {
   countedCash: number;
+  differenceReason?: string;
 }
 
 export interface CreateCashEntry {
@@ -93,6 +102,12 @@ export class CashRegisterService {
   getLatest(): Observable<CashRegister> {
     return this.http.get<CashRegister>(
       `${this.apiUrl}/cash-register/latest`,
+    );
+  }
+
+  getHistory(): Observable<CashRegister[]> {
+    return this.http.get<CashRegister[]>(
+      `${this.apiUrl}/cash-register/history`,
     );
   }
 

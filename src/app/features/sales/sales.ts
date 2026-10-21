@@ -14,6 +14,10 @@ import {
 } from '@angular/forms';
 
 import {
+  Router,
+} from '@angular/router';
+
+import {
   ProductsService,
   Product,
 } from '../../core/services/products.service';
@@ -72,6 +76,8 @@ interface SaleDetailItem {
   ],
 })
 export class Sales implements OnInit {
+  menuOpen = signal(false);
+
   products = signal<Product[]>([]);
   saleItems = signal<SaleItem[]>([]);
   sales = signal<Sale[]>([]);
@@ -210,7 +216,26 @@ export class Sales implements OnInit {
       CustomersService,
     private readonly invoicesService:
       InvoicesService,
+    private readonly router: Router,
   ) {}
+
+  toggleMenu(): void {
+    this.menuOpen.update(
+      (isOpen) => !isOpen,
+    );
+  }
+
+  closeMenu(): void {
+    this.menuOpen.set(false);
+  }
+
+  navigateToCashRegister(): void {
+    this.closeMenu();
+
+    void this.router.navigate([
+      '/cash-register',
+    ]);
+  }
 
   ngOnInit(): void {
     this.loadProducts();
@@ -1972,15 +1997,10 @@ export class Sales implements OnInit {
           documentNumber,
       );
 
-    if (!existingCustomer) {
-      this.invoiceError.set(
-        'No fue posible encontrar el cliente. Registra primero el cliente desde el módulo de clientes.',
-      );
-      return;
-    }
-
+    // El cliente no tiene que estar registrado previamente.
+    // La factura se genera con los datos capturados en este formulario.
     this.pendingInvoiceCustomer.set(
-      existingCustomer,
+      existingCustomer ?? null,
     );
 
     this.showInvoiceCustomerForm.set(
@@ -2046,16 +2066,8 @@ export class Sales implements OnInit {
       return;
     }
 
-    const customer =
-      this.pendingInvoiceCustomer();
-
-    if (!customer) {
-      this.invoiceError.set(
-        'No se encontró el cliente para generar la factura.',
-      );
-      return;
-    }
-
+    // No se exige que exista un registro del cliente en el módulo Clientes.
+    // generateElectronicInvoice utiliza los datos capturados en el formulario.
     this.generateElectronicInvoice(
       saleId,
     );

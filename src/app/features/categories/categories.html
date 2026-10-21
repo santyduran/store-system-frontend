@@ -1,3 +1,4 @@
+
 <div class="categories">
   <div class="categories-header">
     <div>
@@ -8,14 +9,57 @@
       </p>
     </div>
 
-    <button
-      class="btn-primary"
-      type="button"
-      (click)="openCreateForm()"
-    >
-      + Nueva categoría
-    </button>
+    <div class="categories-header-actions">
+      <label
+        class="btn-secondary btn-import"
+        for="categoryCsvFile"
+        [class.disabled]="importing()"
+      >
+        {{ importing() ? 'Importando...' : 'Importar CSV' }}
+      </label>
+
+      <input
+        id="categoryCsvFile"
+        class="csv-file-input"
+        type="file"
+        accept=".csv,text/csv"
+        [disabled]="importing()"
+        (change)="importCsv($event)"
+      />
+
+      <button
+        class="btn-primary"
+        type="button"
+        (click)="openCreateForm()"
+      >
+        + Nueva categoría
+      </button>
+    </div>
   </div>
+
+  @if (importError()) {
+    <div class="error-message" role="alert">
+      {{ importError() }}
+    </div>
+  }
+
+  @if (importSummary()) {
+    <div class="import-summary" role="status">
+      {{ importSummary() }}
+    </div>
+  }
+
+  @if (importErrors().length > 0) {
+    <div class="import-errors">
+      <h3>Observaciones de la importación</h3>
+
+      <ul>
+        @for (message of importErrors(); track $index) {
+          <li>{{ message }}</li>
+        }
+      </ul>
+    </div>
+  }
 
   @if (showCreateForm) {
     <div class="create-category-card">
@@ -187,6 +231,12 @@
                 >
                   Eliminar
                 </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="empty-state">
+                No hay categorías registradas.
               </td>
             </tr>
           }

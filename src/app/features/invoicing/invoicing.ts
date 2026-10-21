@@ -5,6 +5,7 @@ import {
 
 import {
   Component,
+  OnDestroy,
   OnInit,
   signal,
 } from '@angular/core';
@@ -24,7 +25,7 @@ import {
     DatePipe,
   ],
 })
-export class Invoicing implements OnInit {
+export class Invoicing implements OnInit, OnDestroy {
   invoices = signal<Invoice[]>([]);
 
   selectedInvoice =
@@ -36,11 +37,19 @@ export class Invoicing implements OnInit {
 
   pdfLoading = signal(false);
 
+  qrLoading = signal(false);
+
   error = signal('');
 
   detailError = signal('');
 
   pdfError = signal('');
+
+  qrError = signal('');
+
+  qrImageUrl = signal<string | null>(null);
+
+  private currentQrObjectUrl: string | null = null;
 
   constructor(
     private readonly invoicesService:
@@ -49,6 +58,10 @@ export class Invoicing implements OnInit {
 
   ngOnInit(): void {
     this.loadInvoices();
+  }
+
+  ngOnDestroy(): void {
+    this.releaseQrImageUrl();
   }
 
   loadInvoices(): void {
@@ -85,30 +98,27 @@ export class Invoicing implements OnInit {
 
     this.detailError.set('');
 
-    this.selectedInvoice.set(null);
+    this.qrError.set('');
 
-    console.log(
-      'ID de factura seleccionado:',
-      id,
-    );
+    this.qrLoading.set(false);
+
+    this.qrImageUrl.set(null);
+
+    this.releaseQrImageUrl();
+
+    this.selectedInvoice.set(null);
 
     this.invoicesService
       .findOne(id)
       .subscribe({
         next: (invoice) => {
-          console.log(
-            'Factura recibida:',
-            invoice,
-          );
-
           this.selectedInvoice.set(invoice);
 
-          console.log(
-            'Factura seleccionada:',
-            this.selectedInvoice(),
-          );
-
           this.detailLoading.set(false);
+
+          if (invoice.qrCode?.trim()) {
+            this.loadInvoiceQr(invoice._id);
+          }
         },
 
         error: (error) => {
@@ -124,6 +134,62 @@ export class Invoicing implements OnInit {
           this.detailLoading.set(false);
         },
       });
+  }
+
+  private loadInvoiceQr(id: string): void {
+    this.qrLoading.set(true);
+
+    this.qrError.set('');
+
+    this.invoicesService
+      .getQr(id)
+      .subscribe({
+        next: (blob) => {
+          if (!blob || blob.size === 0) {
+            this.qrError.set(
+              'El servidor no devolvió una imagen QR válida.',
+            );
+
+            this.qrLoading.set(false);
+
+            return;
+          }
+
+          this.releaseQrImageUrl();
+
+          const imageUrl =
+            URL.createObjectURL(blob);
+
+          this.currentQrObjectUrl = imageUrl;
+
+          this.qrImageUrl.set(imageUrl);
+
+          this.qrLoading.set(false);
+        },
+
+        error: (error) => {
+          console.error(
+            'Error al cargar el código QR de la factura:',
+            error,
+          );
+
+          this.qrError.set(
+            'No fue posible cargar el código QR de esta factura.',
+          );
+
+          this.qrLoading.set(false);
+        },
+      });
+  }
+
+  private releaseQrImageUrl(): void {
+    if (this.currentQrObjectUrl) {
+      URL.revokeObjectURL(
+        this.currentQrObjectUrl,
+      );
+
+      this.currentQrObjectUrl = null;
+    }
   }
 
   viewPdf(id: string): void {
@@ -228,5 +294,13 @@ export class Invoicing implements OnInit {
     this.selectedInvoice.set(null);
 
     this.detailError.set('');
+
+    this.qrError.set('');
+
+    this.qrLoading.set(false);
+
+    this.qrImageUrl.set(null);
+
+    this.releaseQrImageUrl();
   }
 }

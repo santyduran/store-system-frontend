@@ -177,6 +177,17 @@ export class InvoicesService {
     );
   }
 
+  getQr(
+    id: string,
+  ): Observable<Blob> {
+    return this.http.get(
+      `${this.apiUrl}/invoicing/${id}/qr`,
+      {
+        responseType: 'blob',
+      },
+    );
+  }
+
   cancel(
     id: string,
     cancellationReason?: string,

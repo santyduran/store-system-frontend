@@ -448,3 +448,127 @@ tbody tr:last-child td {
     padding: 20px;
   }
 }
+
+
+.categories-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.csv-file-input {
+  display: none;
+}
+
+
+.btn-import {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 11px 18px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-family: inherit;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-normal),
+    box-shadow var(--transition-normal),
+    transform var(--transition-normal);
+}
+
+.btn-import:hover {
+  background: var(--color-primary-hover);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.btn-import:active {
+  transform: translateY(0);
+}
+
+.btn-import.disabled {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+
+.import-summary {
+  max-width: 1400px;
+  margin: 0 auto 20px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-relaxed);
+}
+
+.import-errors {
+  box-sizing: border-box;
+  max-width: 1400px;
+  margin: 0 auto 20px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+}
+
+.import-errors h3 {
+  margin: 0 0 10px;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+}
+
+.import-errors ul {
+  margin: 0;
+  padding-left: 22px;
+}
+
+.import-errors li {
+  margin-bottom: 6px;
+  line-height: var(--line-height-relaxed);
+}
+
+.import-errors li:last-child {
+  margin-bottom: 0;
+}
+
+.empty-state {
+  padding: 32px 24px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .categories-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .categories-header-actions > * {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .categories-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .categories-header-actions > * {
+    width: 100%;
+  }
+}

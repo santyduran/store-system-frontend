@@ -1,0 +1,403 @@
+
+<div class="categories">
+  <div class="categories-header">
+    <div>
+      <h1>Proveedores</h1>
+      <p>Gestiona la información comercial y bancaria de los proveedores de la tienda.</p>
+    </div>
+
+    <button
+      class="btn-primary"
+      type="button"
+      (click)="openCreateForm()"
+      [disabled]="loading"
+    >
+      + Nuevo proveedor
+    </button>
+  </div>
+
+  @if (errorMessage() !== null && !showCreateForm) {
+    <div class="error-message">{{ errorMessage() }}</div>
+  }
+
+  @if (successMessage() !== null) {
+    <div class="success-message">{{ successMessage() }}</div>
+  }
+
+  @if (showCreateForm) {
+    <div class="create-category-card">
+      <div class="create-category-header">
+        <div>
+          <h2>{{ editingProviderId ? 'Editar proveedor' : 'Nuevo proveedor' }}</h2>
+          <p>Completa la información comercial, de contacto y bancaria.</p>
+        </div>
+
+        <button
+          class="btn-close"
+          type="button"
+          (click)="closeCreateForm()"
+          aria-label="Cerrar formulario"
+        >
+          ×
+        </button>
+      </div>
+
+      @if (errorMessage() !== null) {
+        <div class="error-message">{{ errorMessage() }}</div>
+      }
+
+      <div class="form-section">
+        <h3>Información comercial</h3>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="businessName">Razón social / nombre *</label>
+            <input
+              id="businessName"
+              type="text"
+              maxlength="150"
+              [(ngModel)]="businessName"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="nit">NIT *</label>
+            <input
+              id="nit"
+              type="text"
+              maxlength="30"
+              [(ngModel)]="nit"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="verificationDigit">Dígito de verificación *</label>
+            <input
+              id="verificationDigit"
+              type="text"
+              maxlength="2"
+              [(ngModel)]="verificationDigit"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="city">Ciudad</label>
+            <input
+              id="city"
+              type="text"
+              maxlength="100"
+              [(ngModel)]="city"
+            />
+          </div>
+
+          <div class="form-group full-width">
+            <label for="address">Dirección</label>
+            <input
+              id="address"
+              type="text"
+              maxlength="200"
+              [(ngModel)]="address"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Información de contacto</h3>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="contactName">Nombre del contacto</label>
+            <input
+              id="contactName"
+              type="text"
+              maxlength="100"
+              [(ngModel)]="contactName"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Teléfono</label>
+            <input
+              id="phone"
+              type="tel"
+              maxlength="30"
+              [(ngModel)]="phone"
+            />
+          </div>
+
+          <div class="form-group full-width">
+            <label for="email">Correo electrónico</label>
+            <input
+              id="email"
+              type="email"
+              maxlength="150"
+              [(ngModel)]="email"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Información bancaria</h3>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="bankName">Banco</label>
+            <input
+              id="bankName"
+              type="text"
+              maxlength="100"
+              [(ngModel)]="bankName"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="bankAccountType">Tipo de cuenta</label>
+            <select
+              id="bankAccountType"
+              [(ngModel)]="bankAccountType"
+            >
+              <option value="">Selecciona el tipo de cuenta</option>
+              <option value="Ahorros">Ahorros</option>
+              <option value="Corriente">Corriente</option>
+              <option value="Otra">Otra</option>
+            </select>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="bankAccountNumber">Número de cuenta bancaria</label>
+            <input
+              id="bankAccountNumber"
+              type="text"
+              maxlength="50"
+              [(ngModel)]="bankAccountNumber"
+            />
+          </div>
+        </div>
+      </div>
+
+      <p class="required-note">* Campos obligatorios.</p>
+
+      <div class="form-actions">
+        <button
+          class="btn-secondary"
+          type="button"
+          (click)="closeCreateForm()"
+          [disabled]="loading"
+        >
+          Cancelar
+        </button>
+
+        @if (editingProviderId) {
+          <button
+            class="btn-primary"
+            type="button"
+            (click)="updateProvider()"
+            [disabled]="loading"
+          >
+            {{ loading ? 'Guardando...' : 'Guardar cambios' }}
+          </button>
+        } @else {
+          <button
+            class="btn-primary"
+            type="button"
+            (click)="createProvider()"
+            [disabled]="loading"
+          >
+            {{ loading ? 'Guardando...' : 'Guardar proveedor' }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  @if (selectedProvider(); as selected) {
+    <div class="categories-card">
+      <div class="table-header">
+        <div>
+          <h2>Productos del proveedor</h2>
+          <p>
+            {{ selected.businessName }} · NIT
+            {{ selected.nit }}-{{ selected.verificationDigit }}
+          </p>
+        </div>
+
+        <button
+          class="btn-secondary"
+          type="button"
+          (click)="clearSelectedProvider()"
+          [disabled]="loadingProducts()"
+        >
+          Volver a proveedores
+        </button>
+      </div>
+
+      @if (loadingProducts()) {
+        <div class="empty-state">
+          Cargando productos del proveedor...
+        </div>
+      } @else if (productsError()) {
+        <div class="error-message">{{ productsError() }}</div>
+      } @else if (providerProducts().length === 0) {
+        <div class="empty-state">
+          <h3>Este proveedor no tiene productos asociados</h3>
+          <p>
+            Asigna este proveedor a los productos desde el formulario de productos
+            para que aparezcan en este listado.
+          </p>
+        </div>
+      } @else {
+        <div class="categories-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>SKU</th>
+                <th>Categoría</th>
+                <th>Precio de compra</th>
+                <th>Precio de venta</th>
+                <th>Existencias</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (product of providerProducts(); track product._id) {
+                <tr>
+                  <td>
+                    <div class="category-name">
+                      <div class="category-icon">
+                        {{ product.name.charAt(0).toUpperCase() }}
+                      </div>
+                      <span>{{ product.name }}</span>
+                    </div>
+                  </td>
+
+                  <td>{{ product.sku || '—' }}</td>
+                  <td>{{ product.category?.name || '—' }}</td>
+                  <td>{{ product.purchasePrice | number:'1.2-2' }}</td>
+                  <td>{{ product.salePrice | number:'1.2-2' }}</td>
+                  <td>{{ product.stock }}</td>
+                  <td>{{ product.status === 'ACTIVE' ? 'Activo' : 'Inactivo' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="categories-card">
+      <div class="table-header">
+        <div>
+          <h2>Listado de proveedores</h2>
+          <p>Selecciona el nombre de un proveedor para consultar sus productos.</p>
+        </div>
+
+        <span class="category-count">
+          {{ providers().length }} proveedores
+        </span>
+      </div>
+
+      @if (loading && providers().length === 0) {
+        <div class="empty-state">
+          Cargando proveedores...
+        </div>
+      } @else if (providers().length === 0) {
+        <div class="empty-state">
+          <h3>No hay proveedores registrados</h3>
+          <p>Selecciona «Nuevo proveedor» para registrar el primero.</p>
+        </div>
+      } @else {
+        <div class="categories-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Proveedor</th>
+                <th>NIT</th>
+                <th>Contacto</th>
+                <th>Teléfono</th>
+                <th>Número de cuenta</th>
+                <th>Tipo de cuenta</th>
+                <th>Estado</th>
+                <th class="actions-column">Acciones</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (provider of providers(); track provider._id) {
+                <tr>
+                  <td>
+                    <div class="category-name">
+                      <div class="category-icon">
+                        {{ provider.businessName.charAt(0).toUpperCase() }}
+                      </div>
+
+                      <button
+                        type="button"
+                        class="btn-action"
+                        (click)="selectProvider(provider)"
+                        [disabled]="!provider._id || loadingProducts()"
+                        [attr.aria-label]="'Consultar productos de ' + provider.businessName"
+                      >
+                        {{ provider.businessName }}
+                      </button>
+                    </div>
+                  </td>
+
+                  <td>{{ provider.nit }}-{{ provider.verificationDigit }}</td>
+                  <td>{{ provider.contactName || '—' }}</td>
+                  <td>{{ provider.phone || '—' }}</td>
+                  <td>{{ provider.bankAccountNumber || '—' }}</td>
+                  <td>{{ provider.bankAccountType || '—' }}</td>
+
+                  <td>
+                    <div class="user-status-control">
+                      <button
+                        type="button"
+                        class="status-switch"
+                        [class.status-switch-active]="provider.status === 'ACTIVE'"
+                        [class.status-switch-loading]="updatingStatus() === provider._id"
+                        [disabled]="updatingStatus() !== null"
+                        [attr.aria-checked]="provider.status === 'ACTIVE'"
+                        [attr.aria-label]="provider.status === 'ACTIVE' ? 'Desactivar proveedor' : 'Activar proveedor'"
+                        role="switch"
+                        (click)="updateProviderStatus(provider)"
+                      >
+                        <span class="status-switch-track">
+                          <span class="status-switch-thumb"></span>
+                        </span>
+                      </button>
+
+                      @if (provider.status === 'ACTIVE') {
+                        <span class="status-switch-label status-switch-label-active">
+                          Activo
+                        </span>
+                      } @else {
+                        <span class="status-switch-label status-switch-label-inactive">
+                          Inactivo
+                        </span>
+                      }
+                    </div>
+                  </td>
+
+                  <td class="actions">
+                    <button
+                      class="btn-action"
+                      type="button"
+                      (click)="openEditForm(provider)"
+                      [disabled]="loading || updatingStatus() !== null || provider.status === 'INACTIVE'"
+                    >
+                      Editar
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+</div>
